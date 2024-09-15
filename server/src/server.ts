@@ -2,6 +2,8 @@ import * as dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import { connectToDatabase } from "./database";
+import { productRouter } from "./product.routes";
+
 
 // Load environment variables from the .env file, where the ATLAS_URI is configured
 dotenv.config({ path: '../.env' });
@@ -23,6 +25,7 @@ connectToDatabase(MONGODB_URI)
 
     // start the Express server
     app.listen(5200, () => {
+        app.use("/products", productRouter)
       console.log(`Server running at http://localhost:5200...`);
     });
   })
