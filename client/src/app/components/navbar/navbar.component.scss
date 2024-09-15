@@ -1,0 +1,41 @@
+@import '../../../styles.scss';
+
+.navbar{
+    background: $white-color;
+    box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.20);
+    position: fixed;
+    top:0;
+    left:0;
+    z-index: 1;
+}
+
+.navbar-logo{
+    color: $secondary-color;
+}
+
+.navbar-spacer {
+    flex: 1 1 auto;
+}
+
+.navbar-tab{
+    color: $black-color;
+    padding: 4px 16px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.navbar-tab:hover{
+    color: $primary-color;
+}
+
+.navbar-tab-button{
+    color: $black-color;
+}
+
+.navbar-tab-button:hover{
+    color: $primary-color;
+}
+
+.active-link{
+    color: $primary-color;
+}
