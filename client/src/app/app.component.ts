@@ -7,11 +7,14 @@ import { NavbarComponent } from './components/navbar/navbar.component';
   standalone: true,
   imports: [RouterOutlet, NavbarComponent],
   template: `
-    <app-navbar>
-    <router-outlet />
+    <main class="main">
+      <app-navbar></app-navbar>
+      <router-outlet />
+    </main>
   `,
-  styles: [],
+  styleUrl: `./app.component.scss`,
 })
 export class AppComponent {
   title = 'client';
 }
+

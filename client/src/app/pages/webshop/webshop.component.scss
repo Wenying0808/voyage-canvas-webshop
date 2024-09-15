@@ -1,0 +1,17 @@
+.webshop{
+    position: relative;
+    top: 64px;
+    left: 0;
+
+    display: flex;
+    padding: 80px;
+    justify-content: left;
+    align-items: flex-start;
+    align-content: flex-start;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.webshop-product{
+    width: 340px;
+}

@@ -1,0 +1,83 @@
+@import '../../../styles.scss';
+
+.product-card{
+    box-sizing: border-box;
+    width: 340px;
+    height: 354px;
+    display: flex;
+    padding: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    border-radius: 10px;
+    background: $white-color;
+    box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+}
+
+.product-card:hover{
+    box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.20);
+}
+.product-card-image{
+    box-sizing: border-box;
+    width: 300px;
+    height: 250px;
+    border-radius: 2px;
+}
+.product-card-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    align-self: stretch;
+}
+.product-card-header-name{
+    color: #000;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 120%;
+    cursor: text;
+}
+.product-card-header-chip{
+    display: flex;
+    padding: 4px 8px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border-radius: 4px;
+    background: $hover-color;
+    cursor: text;
+
+    color: $primary-color;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 120%;
+}
+.product-card-subheader{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    align-self: stretch;
+}
+.product-card-subheader-price{
+    color: $black-color;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 120%; 
+    cursor: text;
+}
+.product-card-subheader-bottom{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+.product-card-subheader-bottom-stock{
+    color: $warning-color;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 120%; 
+    cursor: text;
+}
+.product-card-subheader-bottom-button{
+    cursor: pointer;
+}
