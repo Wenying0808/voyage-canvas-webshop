@@ -13,6 +13,7 @@ import { RouterModule } from '@angular/router';
       <span class="navbar-logo">Voyage Canvas</span>
       <span class="navbar-spacer"></span>
       <a class="navbar-tab" routerLink="/about" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">About</a>
+      <a class="navbar-tab" routerLink="/webshop-management" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">Webshop-Management</a>
       <a class="navbar-tab" routerLink="/webshop" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">Webshop</a>
       <button mat-icon-button class="navbar-tab-button" aria-label="basket" routerLink="/basket" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
           <mat-icon>shopping_bag</mat-icon>
