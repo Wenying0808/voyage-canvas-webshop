@@ -9,7 +9,7 @@ export async function connectToDatabase(uri: string) {
     const client = new mongodb.MongoClient(uri);
     await client.connect();
 
-    const db = client.db("meanStackExample");
+    const db = client.db("voyage-canvas-webshop");
     await applySchemaValidation(db);
 
     const productsCollection = db.collection<Product>("products");

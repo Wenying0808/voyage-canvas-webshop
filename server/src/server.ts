@@ -26,7 +26,7 @@ connectToDatabase(MONGODB_URI)
     // start the Express server
     app.listen(5200, () => {
         app.use("/products", productRouter)
-      console.log(`Server running at http://localhost:5200...`);
+        console.log(`Server running at http://localhost:5200...`);
     });
   })
   .catch((error) => console.error(error));
