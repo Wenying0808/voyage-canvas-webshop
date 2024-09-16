@@ -88,10 +88,11 @@ import { Product } from '../../product.interface';
         <input
           matInput
           formControlName="imageUrls"
+          placeholder="Enter image URLs separated by commas"
           required
         />
         @if (imageUrls.invalid) {
-        <mat-error>ImageUrls must be filled in.</mat-error>
+        <mat-error>At least one image URL must be provided.</mat-error>
         }
       </mat-form-field>
       <br/>
@@ -125,7 +126,7 @@ export class ProductFormComponent {
       country: ['', [Validators.required]],
       price: [0, [Validators.required, Validators.min(0)]],
       stock: [0, [Validators.required, Validators.min(0)]],
-      imageUrls: [[''], [Validators.required]]
+      imageUrls: ['', [Validators.required]]
     })
   }
 
@@ -136,9 +137,10 @@ export class ProductFormComponent {
       country: this.initialState()?.country || '',
       price: this.initialState()?.price || 0,
       stock: this.initialState()?.stock || 0,
-      imageUrls: this.initialState()?.imageUrls || [],
+      imageUrls: this.initialState()?.imageUrls.join(', ') || '',
     })
   }
+
 // Form Accessors 
   get name() {
     return this.productForm.get('name')!;
@@ -160,7 +162,14 @@ export class ProductFormComponent {
   }
 
   submitForm() {
-    this.formSubmitted.emit(this.productForm.value as Product);
+    if (this.productForm.valid) {
+      const formValue = this.productForm.value;
+      const product: Product = {
+        ...formValue,
+        imageUrls: formValue.imageUrls.split(',').map((url: string) => url.trim()).filter(Boolean)
+      };
+      this.formSubmitted.emit(product);
+    }
   }
 
 }
