@@ -14,7 +14,7 @@ import { Product } from '../../product.interface';
   template: `
     <div class="webshop-management" >
       <div class="webshop-management-toolbar">
-        <button mat-raised-button color="primary" [routerLink]="['new']">
+        <button mat-raised-button color="primary" [routerLink]="['/add-product']">
             Create New Product
         </button>
       </div>
@@ -55,7 +55,7 @@ import { Product } from '../../product.interface';
                 </button>
               </td>
             </ng-container>
-            
+
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
