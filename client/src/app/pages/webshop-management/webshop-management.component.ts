@@ -43,7 +43,7 @@ import { Product } from '../../product.interface';
             <ng-container matColumnDef="col-action">
               <th mat-header-cell *matHeaderCellDef>Action</th>
               <td mat-cell *matCellDef="let product">
-                <button mat-raised-button [routerLink]="['edit/', product._id]">
+                <button mat-raised-button [routerLink]="['/edit-product', product._id]">
                   Edit
                 </button>
                 <button
