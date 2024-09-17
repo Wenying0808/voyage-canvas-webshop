@@ -10,11 +10,21 @@ import { ActivatedRoute, Router } from '@angular/router';
   standalone: true,
   imports: [ProductFormComponent, MatCardModule],
   template: `
-    <p>
-      edit-product works!
-    </p>
+    <div class="edit-product">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Edit a Product</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+        <app-product-form
+          [initialState]="product()"
+          (formSubmitted)="editProduct($event)"
+        ></app-product-form>
+      </mat-card-content>
+      </mat-card>
+    </div>
   `,
-  styles: ``
+  styleUrl: `./edit-product.component.scss`
 })
 export class EditProductComponent implements OnInit {
 
