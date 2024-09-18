@@ -1,8 +1,10 @@
 import * as mongodb from "mongodb";
 import { Product } from "./product.interface";
+import { User } from "./user.interface";
 
 export const collections: {
     products?: mongodb.Collection<Product>;
+    users?: mongodb.Collection<User>;
 } = {};
 
 export async function connectToDatabase(uri: string) {
@@ -14,6 +16,9 @@ export async function connectToDatabase(uri: string) {
 
     const productsCollection = db.collection<Product>("products");
     collections.products = productsCollection;
+
+    const usersCollection = db.collection<User>("users");
+    collections.users = usersCollection;
 }
 
 async function applySchemaValidation(db: mongodb.Db) {
@@ -51,6 +56,32 @@ async function applySchemaValidation(db: mongodb.Db) {
             },
         },
     };
+    const userSchema = {
+        $jsonSchema:{
+            bsonType: "object",
+            required: ["name", "email", "provider", "providerId"],
+            additionalProperties: false,
+            properties: {
+                _id: {},
+                name: {
+                    bsonType: "string",
+                    description: "'name' is required and is a string",
+                },
+                email: {
+                    bsonType: "string",
+                    description: "'email' is required and is a string",
+                },
+                provider: {
+                    bsonType: "string",
+                    description: "'provider' is required and is a string",
+                },
+                providerId: {
+                    bsonType: "string",
+                    description: "'providerId' is required and is a string",
+                },
+            }
+        }
+    };
 
     // Try applying the modification to the collection, if the collection doesn't exist, create it
    await db.command({
@@ -60,5 +91,14 @@ async function applySchemaValidation(db: mongodb.Db) {
         if (error.codeName === "NamespaceNotFound") {
             await db.createCollection("products", {validator: productSchema});
         }
+    });
+
+    await db.command({
+        collMod: "users",
+        validator: userSchema
+        }).catch(async (error: mongodb.MongoServerError) => {
+            if (error.codeName === "NamespaceNotFound") {
+                await db.createCollection("users", {validator: userSchema});
+            }
     });
 }

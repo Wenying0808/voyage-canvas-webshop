@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
-import { NavbarComponent } from '../../components/navbar/navbar.component';
 
 @Component({
   selector: 'app-basket',
   standalone: true,
-  imports: [NavbarComponent],
+  imports: [],
   template: `
     <div class="basket">
       <p>
