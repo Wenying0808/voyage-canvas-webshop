@@ -22,7 +22,7 @@ export class AccountComponent {
   selectedTab = 'account'; // Default to 'account'
 
   onTabSelected(tab: string) {
-    console.log('Selected tab:', tab);
+    /*console.log('Selected tab:', tab);*/
     this.selectedTab = tab;
   }
 }

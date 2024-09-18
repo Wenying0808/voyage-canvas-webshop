@@ -19,9 +19,9 @@ export class SidebarComponent {
   selectedTab = "account"; // default
 
   selectTab(tab: string){
-    console.log('Tab clicked:', tab);
+    /*console.log('Tab clicked:', tab);*/
     this.selectedTab = tab;
     this.tabSelected.emit(tab); // emits the selected tab (as a string) to the parent component
-    console.log('Tab click event emitted:', tab);
+    /*console.log('Tab click event emitted:', tab);*/
   }
 }

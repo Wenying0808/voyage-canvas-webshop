@@ -1,0 +1,24 @@
+.account-overview{
+    display: flex;
+    padding: 30px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+
+    flex: 1 0 0;
+    align-self: stretch;
+}
+
+.account-overview-detail{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.account-overview-detail-header{
+
+}
+
+.account-overview-detail-value{
+
+}
