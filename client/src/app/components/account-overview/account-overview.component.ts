@@ -11,13 +11,13 @@ import { Subscription } from 'rxjs';
   standalone: true,
   imports: [CommonModule, MatButtonModule, MatIconModule],
   template: `
-    <div class="account-overview" *ngIf="!authService.isLoggedIn">
+    <div class="account-overview" *ngIf="!(authService.currentUser | async)">
       <button mat-fab extended (click)="login()">
         <mat-icon>login</mat-icon>
-        Log In
+        Log In With Google
       </button>
     </div>
-    <div class="account-overview" *ngIf="authService.isLoggedIn">
+    <div class="account-overview" *ngIf="authService.currentUser | async as user">
       <div class="account-overview-detail">
         <div class="account-overview-detail-header">Name:</div>
         <div class="account-overview-detail-value">{{ user?.name }}</div>
@@ -61,6 +61,7 @@ export class AccountOverviewComponent implements OnInit, OnDestroy{
 
   logout() {
     this.authService.logout();
+    console.log("log out triggered");
   }
 
   loadUserData() {

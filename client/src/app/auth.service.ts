@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, throwError } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { User } from "./user.interface";
 
@@ -25,6 +25,11 @@ export class AuthService {
         this.http.get(`${this.apiUrl}/logout`, { withCredentials: true }).pipe(
             tap(() => {
             this.currentUserSubject.next(null);
+            }),
+            catchError( error => {
+                console.error('Logout failed', error);
+                this.currentUserSubject.next(null);
+                return throwError(() => error);
             })
         ).subscribe();
     }
