@@ -10,18 +10,13 @@ import { ActivatedRoute, Router } from '@angular/router';
   standalone: true,
   imports: [ProductFormComponent, MatCardModule],
   template: `
-    <div class="edit-product">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Edit a Product</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-        <app-product-form
-          [initialState]="product()"
-          (formSubmitted)="editProduct($event)"
-        ></app-product-form>
-      </mat-card-content>
-      </mat-card>
+    <div class="edit-product">  
+      <app-product-form
+        [formMode]="'edit'"
+        [initialProduct]="product()"
+        (formSubmitted)="editProduct($event)"
+        (formCancelled)="cancel()"
+      ></app-product-form>
     </div>
   `,
   styleUrl: `./edit-product.component.scss`
@@ -50,12 +45,15 @@ export class EditProductComponent implements OnInit {
     .updateProduct(this.product()._id || '', product)
     .subscribe({
       next: () => {
-        this.router.navigate(['/']);
+        this.router.navigate(['/webshop-management']);
       },
       error: (error) => {
         alert('Failed to update product');
         console.error(error);
       },
     })
+  }
+  cancel() {
+    this.router.navigate(['/webshop-management']);
   }
 }

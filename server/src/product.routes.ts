@@ -5,10 +5,28 @@ import { collections } from "./database";
 export const productRouter = express.Router();
 productRouter.use(express.json());
 
-// get all products from database
-productRouter.get("/", async(req, res)=>{
+// Get unique countries
+productRouter.get("/countries", async (req, res) => {
     try {
-        const products = await collections?.products?.find({}).toArray();
+        const countries = await collections?.products?.distinct("country.name");
+        res.status(200).send(countries);
+    } catch (error) {
+        res.status(500).send(error instanceof Error ? error.message : "Unknown error: get unique countries");
+    }
+})
+
+// get all products based on filters (profuct name and selected country) from database
+productRouter.get("/", async (req, res) => {
+    try {
+        const { nameSearch, countryFilter } = req.query;
+        let query: any = {};
+        if (nameSearch) {
+            query.name = { $regex: nameSearch as string, $options: 'i' };
+        }
+        if (countryFilter && countryFilter !== 'all') {
+            query['country.name'] = countryFilter;
+        }
+        const products = await collections?.products?.find(query).toArray();
         res.status(200).send(products);
     } catch (error) {
         res.status(500).send(error instanceof Error ? error.message : "Unknown error");
@@ -24,10 +42,10 @@ productRouter.get("/:id", async(req, res)=>{
         if(product){
             res.status(200).send(product)
         } else {
-            res.status(404).send(`Failed to find an employee: ID ${id}`);
+            res.status(404).send(`Failed to find an product: ID ${id}`);
         }
     } catch (error){
-        res.status(404).send(`Failed to find an employee: ID ${req?.params?.id}`);
+        res.status(404).send(`Failed to find an product: ID ${req?.params?.id}`);
     }
 });
 

@@ -1,18 +1,25 @@
-import { Component, Input, input, Output, EventEmitter, effect, } from '@angular/core';
+import { Component, Input, input, Output, EventEmitter, effect, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { Product } from '../../product.interface';
+import { CountryService } from '../../country.service';
+import { AsyncPipe, NgForOf } from '@angular/common';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatInputModule,
     MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
     MatButtonModule,
+    AsyncPipe, 
+    NgForOf
   ],
   template: `
     <form 
@@ -21,6 +28,8 @@ import { Product } from '../../product.interface';
       [formGroup]="productForm" 
       (submit)="submitForm()"
     >
+      <h2>{{ formTitle }}</h2>
+      <br/>
       <mat-form-field>
         <mat-label>Name</mat-label>
         <input 
@@ -47,14 +56,15 @@ import { Product } from '../../product.interface';
       </mat-form-field>
       <mat-form-field>
         <mat-label>Country</mat-label>
-        <input
-          matInput
-          placeholder="Country"
-          formControlName="country"
-          required
-        />
+        <mat-select formControlName="country" required>
+          @for (country of countries$ | async; track country.code) {
+            <mat-option [value]="{ code: country.code, name: country.name }">
+              {{ country.name }}
+            </mat-option>
+          }
+        </mat-select>
         @if (country.invalid) {
-        <mat-error>Country must be filled in.</mat-error>
+        <mat-error>Country must be selected.</mat-error>
         }
       </mat-form-field>
       <mat-form-field>
@@ -96,50 +106,92 @@ import { Product } from '../../product.interface';
         }
       </mat-form-field>
       <br/>
-      <button mat-raised-button
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="cancel()"
+      >
+        Cancel
+      </button>
+      <button 
+        mat-raised-button
         color="primary"
         type="submit"
         [disabled]="productForm.invalid"
       >
-        Add
+      {{ submitButtonText }}
       </button>
     </form>
   `,
   styleUrl: `./product-form.component.scss`
 })
 
-export class ProductFormComponent {
+export class ProductFormComponent implements OnInit, OnChanges{
   
-  initialState = input<Product>();
-
+  @Input() initialProduct: Product | null = null;
+  @Input() formMode: 'add' | 'edit' = 'add';
   @Output() forValuesChanged = new EventEmitter<Product>();
-
+  @Output() formCancelled = new EventEmitter<void>();
   @Output() formSubmitted = new EventEmitter<Product>();
 
   productForm: FormGroup;
+  formTitle: string = 'Add Product';
+  submitButtonText: string = 'Add';
+  countries$: Observable<{ name: string; code: string }[]>;
 
-
-  constructor(private formBuilder: FormBuilder){
+  constructor(
+    private formBuilder: FormBuilder, 
+    private countryService: CountryService
+  ){
     this.productForm = this.formBuilder.group({
       name: ['', [Validators.required]],
       description: ['', [Validators.required]],
-      country: ['', [Validators.required]],
+      country: [null, [Validators.required]],
       price: [0, [Validators.required, Validators.min(0)]],
       stock: [0, [Validators.required, Validators.min(0)]],
       imageUrls: ['', [Validators.required]]
-    })
+    });
+    this.countries$ = this.countryService.getCountries();
   }
 
   ngOnInit() {
-    this.productForm.setValue({
-      name: this.initialState()?.name || '',
-      description: this.initialState()?.description || '',
-      country: this.initialState()?.country || '',
-      price: this.initialState()?.price || 0,
-      stock: this.initialState()?.stock || 0,
-      imageUrls: this.initialState()?.imageUrls.join(', ') || '',
-    })
+    this.updateFormMode();
+    this.initializeForm();
   }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['formMode']) {
+      this.updateFormMode();
+    }
+    if (changes['initialProduct']) {
+      this.initializeForm();
+    }
+  }
+
+  private updateFormMode(){
+    if(this.formMode === 'edit'){
+      this.formTitle = 'Edit Product';
+      this.submitButtonText = 'Update';
+    } else {
+      this.formTitle = 'Add Product';
+      this.submitButtonText = 'Add';
+    }
+  }
+
+  private initializeForm(){
+    if (this.initialProduct) {
+      this.productForm.patchValue({
+        name: this.initialProduct.name || '',
+        description: this.initialProduct.description || '',
+        country: this.initialProduct.country,
+        price: this.initialProduct.price || 0,
+        stock: this.initialProduct.stock || 0,
+        imageUrls: this.initialProduct.imageUrls.join(', ') || '',
+      });
+    } else {
+      this.productForm.reset();
+    }
+  };
 
 // Form Accessors 
   get name() {
@@ -170,6 +222,9 @@ export class ProductFormComponent {
       };
       this.formSubmitted.emit(product);
     }
+  }
+  cancel() {
+    this.formCancelled.emit();
   }
 
 }
