@@ -1,18 +1,25 @@
 import { Component, Input, input, Output, EventEmitter, effect, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { Product } from '../../product.interface';
+import { CountryService } from '../../country.service';
+import { AsyncPipe, NgForOf } from '@angular/common';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatInputModule,
     MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
     MatButtonModule,
+    AsyncPipe, 
+    NgForOf
   ],
   template: `
     <form 
@@ -49,14 +56,15 @@ import { Product } from '../../product.interface';
       </mat-form-field>
       <mat-form-field>
         <mat-label>Country</mat-label>
-        <input
-          matInput
-          placeholder="Country"
-          formControlName="country"
-          required
-        />
+        <mat-select formControlName="country" required>
+          @for (country of countries$ | async; track country.code) {
+            <mat-option [value]="country.code">
+              {{ country.name }}
+            </mat-option>
+          }
+        </mat-select>
         @if (country.invalid) {
-        <mat-error>Country must be filled in.</mat-error>
+        <mat-error>Country must be selected.</mat-error>
         }
       </mat-form-field>
       <mat-form-field>
@@ -129,8 +137,12 @@ export class ProductFormComponent implements OnInit, OnChanges{
   productForm: FormGroup;
   formTitle: string = 'Add Product';
   submitButtonText: string = 'Add';
+  countries$: Observable<{ name: string; code: string }[]>;
 
-  constructor(private formBuilder: FormBuilder){
+  constructor(
+    private formBuilder: FormBuilder, 
+    private countryService: CountryService
+  ){
     this.productForm = this.formBuilder.group({
       name: ['', [Validators.required]],
       description: ['', [Validators.required]],
@@ -138,7 +150,8 @@ export class ProductFormComponent implements OnInit, OnChanges{
       price: [0, [Validators.required, Validators.min(0)]],
       stock: [0, [Validators.required, Validators.min(0)]],
       imageUrls: ['', [Validators.required]]
-    })
+    });
+    this.countries$ = this.countryService.getCountries();
   }
 
   ngOnInit() {
