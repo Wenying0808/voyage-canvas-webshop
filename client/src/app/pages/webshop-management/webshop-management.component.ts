@@ -15,7 +15,7 @@ import { Product } from '../../product.interface';
     <div class="webshop-management" >
       <div class="webshop-management-toolbar">
         <button mat-raised-button color="primary" [routerLink]="['/add-product']">
-            Create New Product
+            Add Product
         </button>
       </div>
       <mat-card>
