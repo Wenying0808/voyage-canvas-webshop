@@ -1,19 +1,44 @@
-import { Component, OnInit, WritableSignal } from '@angular/core';
+import { Component, OnInit, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
+
 import { ProductService } from '../../product.service';
 import { Product } from '../../product.interface';
 
 @Component({
   selector: 'app-webshop-management',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatCardModule, MatTableModule],
+  imports: [
+    CommonModule, 
+    RouterModule, 
+    FormsModule, 
+    MatInputModule, 
+    MatSelectModule, 
+    MatCardModule, 
+    MatTableModule,
+    MatButtonModule,
+  ],
   providers: [ProductService],
   template: `
     <div class="webshop-management" >
       <div class="webshop-management-toolbar">
+        <mat-form-field>
+          <input matInput [(ngModel)]="searchProductName" placeholder="Search product name" (keyup)="onSearch()">
+        </mat-form-field>
+        <mat-form-field>
+          <mat-select [(ngModel)]="selectedCountry" (selectionChange)="onSearch()">
+            <mat-option value="all">All Countries</mat-option>
+            <mat-option *ngFor="let country of countries()" [value]="country">
+              {{ country }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
         <button mat-raised-button color="primary" [routerLink]="['/add-product']">
             Add Product
         </button>
@@ -23,7 +48,7 @@ import { Product } from '../../product.interface';
           <mat-card-title>Products List</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <table mat-table [dataSource]="products$()">
+          <table mat-table [dataSource]="products()">
             <ng-container matColumnDef="col-name">
               <th mat-header-cell *matHeaderCellDef>Name</th>
               <td mat-cell *matCellDef="let product">{{ product.name }}</td>
@@ -68,7 +93,9 @@ import { Product } from '../../product.interface';
 })
 
 export class WebshopMnagementComponent implements OnInit {
-  products$ = {} as WritableSignal<Product[]>;
+  products: Signal<Product[]>;
+  countries: Signal<string[]>;
+
   displayedColumns: string[] = [
     'col-name',
     'col-country',
@@ -77,10 +104,17 @@ export class WebshopMnagementComponent implements OnInit {
     'col-action',
   ];
 
-  constructor(private productService: ProductService) {}
+  searchProductName: string = '';
+  selectedCountry: string = 'all';
+
+  constructor(private productService: ProductService) {
+    this.products = this.productService.products$;
+    this.countries = this.productService.countries$;
+  }
 
   ngOnInit() {
     this.fetchProducts();
+    this.productService.getCountries();
   }
 
   deleteProduct(id: string): void {
@@ -89,8 +123,11 @@ export class WebshopMnagementComponent implements OnInit {
     });
   }
 
+  onSearch(): void {
+    this.fetchProducts();
+  }
+
   private fetchProducts(): void {
-    this.products$ = this.productService.products$;
-    this.productService.getProducts();
+    this.productService.getProducts(this.searchProductName, this.selectedCountry);
   }
 }
