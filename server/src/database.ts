@@ -38,8 +38,19 @@ async function applySchemaValidation(db: mongodb.Db) {
                     description: "'description' is required and is a string",
                 },
                 country: {
-                    bsonType: "string",
-                    description: "'country' is required and is a string",
+                    bsonType: "object",  
+                    required: ["code", "name"],  
+                    properties: {
+                        code: {
+                            bsonType: "string",
+                            description: "'code' is required and is a string",
+                        },
+                        name: {
+                            bsonType: "string",
+                            description: "'name' is required and is a string",
+                        },
+                    },
+                    description: "'country' is required and should be an object with 'code' and 'name'",
                 },
                 price: {
                     bsonType: "number",

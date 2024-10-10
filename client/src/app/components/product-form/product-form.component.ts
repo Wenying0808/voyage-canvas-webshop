@@ -58,7 +58,7 @@ import { Observable } from 'rxjs';
         <mat-label>Country</mat-label>
         <mat-select formControlName="country" required>
           @for (country of countries$ | async; track country.code) {
-            <mat-option [value]="country.code">
+            <mat-option [value]="{ code: country.code, name: country.name }">
               {{ country.name }}
             </mat-option>
           }
@@ -146,7 +146,7 @@ export class ProductFormComponent implements OnInit, OnChanges{
     this.productForm = this.formBuilder.group({
       name: ['', [Validators.required]],
       description: ['', [Validators.required]],
-      country: ['', [Validators.required]],
+      country: [null, [Validators.required]],
       price: [0, [Validators.required, Validators.min(0)]],
       stock: [0, [Validators.required, Validators.min(0)]],
       imageUrls: ['', [Validators.required]]
@@ -183,7 +183,7 @@ export class ProductFormComponent implements OnInit, OnChanges{
       this.productForm.patchValue({
         name: this.initialProduct.name || '',
         description: this.initialProduct.description || '',
-        country: this.initialProduct.country || '',
+        country: this.initialProduct.country,
         price: this.initialProduct.price || 0,
         stock: this.initialProduct.stock || 0,
         imageUrls: this.initialProduct.imageUrls.join(', ') || '',

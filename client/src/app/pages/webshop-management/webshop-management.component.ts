@@ -30,7 +30,7 @@ import { Product } from '../../product.interface';
             </ng-container>
             <ng-container matColumnDef="col-country">
               <th mat-header-cell *matHeaderCellDef>Country</th>
-              <td mat-cell *matCellDef="let product">{{ product.country }}</td>
+              <td mat-cell *matCellDef="let product">{{ product.country.name }}</td>
             </ng-container>
             <ng-container matColumnDef="col-price">
               <th mat-header-cell *matHeaderCellDef>Price</th>
