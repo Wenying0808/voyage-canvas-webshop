@@ -28,7 +28,9 @@ import { Observable } from 'rxjs';
       [formGroup]="productForm" 
       (submit)="submitForm()"
     >
-      <h2>{{ formTitle }}</h2>
+      <div class="product-form-title">
+        {{ formTitle }}
+      </div>
       <br/>
       <mat-form-field>
         <mat-label>Name</mat-label>
@@ -106,21 +108,23 @@ import { Observable } from 'rxjs';
         }
       </mat-form-field>
       <br/>
-      <button
-        mat-raised-button
-        color="primary"
-        (click)="cancel()"
-      >
-        Cancel
-      </button>
-      <button 
-        mat-raised-button
-        color="primary"
-        type="submit"
-        [disabled]="productForm.invalid"
-      >
-      {{ submitButtonText }}
-      </button>
+      <div class="product-form-buttions">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="cancel()"
+        >
+          Cancel
+        </button>
+        <button 
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="productForm.invalid"
+        >
+        {{ submitButtonText }}
+        </button>
+      </div>
     </form>
   `,
   styleUrl: `./product-form.component.scss`
@@ -182,15 +186,14 @@ export class ProductFormComponent implements OnInit, OnChanges{
     if (this.initialProduct) {
       this.productForm.patchValue({
         name: this.initialProduct.name || '',
-        description: this.initialProduct.description || '',
-        
+        description: this.initialProduct.description || '',   
         price: this.initialProduct.price || 0,
         stock: this.initialProduct.stock || 0,
         imageUrl: this.initialProduct.imageUrl || '',
       });
       /*console.log("loaded product:", this.initialProduct);*/
-      /*console.log("loaded product country:", this.country);*/
-      // Set country after countries have been loaded
+
+      // Set country after countries have been loaded as patchValues for ma-select doesn't work
       this.countries$.subscribe(countries => {
         if (this.initialProduct && this.initialProduct.country){
           const selectedCountry = countries.find(c => c.code === this.initialProduct?.country.code);
@@ -204,6 +207,7 @@ export class ProductFormComponent implements OnInit, OnChanges{
     }
   };
 
+  // for mat-select component
   compareCountries(country1: any, country2: any): boolean {
     return country1 && country2 ? country1.code === country2.code : country1 === country2;
   }
@@ -233,8 +237,12 @@ export class ProductFormComponent implements OnInit, OnChanges{
       const formValue = this.productForm.value;
       const product: Product = {
         ...formValue,
+
+        imageUrl: formValue.imageUrl,
+        // Remove imageUrls from the submitted product
+        imageUrls: undefined
       };
-      this.formSubmitted.emit(product);
+      this.formSubmitted.emit(product); //send data from child component to parent component
     }
   }
   cancel() {

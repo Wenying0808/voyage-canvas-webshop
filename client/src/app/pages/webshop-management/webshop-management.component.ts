@@ -28,10 +28,10 @@ import { Product } from '../../product.interface';
   template: `
     <div class="webshop-management" >
       <div class="webshop-management-toolbar">
-        <mat-form-field>
+        <mat-form-field class="webshop-management-toolbar-form-field">
           <input matInput [(ngModel)]="searchProductName" placeholder="Search product name" (keyup)="onSearch()">
         </mat-form-field>
-        <mat-form-field>
+        <mat-form-field class="webshop-management-toolbar-form-field">
           <mat-select [(ngModel)]="selectedCountry" (selectionChange)="onSearch()">
             <mat-option value="all">All Countries</mat-option>
             <mat-option *ngFor="let country of countries()" [value]="country">
@@ -45,7 +45,7 @@ import { Product } from '../../product.interface';
       </div>
       <mat-card>
         <mat-card-header>
-          <mat-card-title>Products List</mat-card-title>
+          <mat-card-title>List Of Products</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <table mat-table [dataSource]="products()">
@@ -66,18 +66,20 @@ import { Product } from '../../product.interface';
               <td mat-cell *matCellDef="let product">{{ product.stock }}</td>
             </ng-container>
             <ng-container matColumnDef="col-action">
-              <th mat-header-cell *matHeaderCellDef>Action</th>
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
               <td mat-cell *matCellDef="let product">
-                <button mat-raised-button [routerLink]="['/edit-product', product._id]">
-                  Edit
-                </button>
-                <button
-                  mat-raised-button
-                  color="warn"
-                  (click)="deleteProduct(product._id || '')"
-                >
-                  Delete
-                </button>
+                <div class="table-action-button-group">
+                  <button mat-raised-button [routerLink]="['/edit-product', product._id]">
+                    Edit
+                  </button>
+                  <button
+                    mat-raised-button
+                    color="warn"
+                    (click)="deleteProduct(product._id || '')"
+                  >
+                    Delete
+                  </button>
+                </div>
               </td>
             </ng-container>
 
