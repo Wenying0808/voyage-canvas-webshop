@@ -25,7 +25,7 @@ async function applySchemaValidation(db: mongodb.Db) {
     const productSchema = {
         $jsonSchema: {
             bsonType: "object",
-            required: ["name", "description", "country", "price", "stock", "imageUrls"],
+            required: ["name", "description", "country", "price", "stock", "imageUrl"],
             additionalProperties: false,
             properties: {
                 _id: {},
@@ -60,9 +60,9 @@ async function applySchemaValidation(db: mongodb.Db) {
                     bsonType: "number",
                     description: "'stock' is required and is a number",
                 },
-                imageUrls: {
-                    bsonType: "array",
-                    description: "'imageUrls' is required",
+                imageUrl: {
+                    bsonType: "string",
+                    description: "'imageUrl' is required",
                 },
             },
         },

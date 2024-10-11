@@ -8,12 +8,14 @@ import { Product } from './product.interface';
 @Injectable({
   providedIn: 'root'
 })
+
 export class ProductService {
   private url = 'http://localhost:5200';
-  products$: WritableSignal<Product[]> = signal([]); //  $ as reactive data sources
-  product$ = signal<Product>({} as Product);
+  products$: WritableSignal<Product[]> = signal([]); //  $ as reactive data source to store an array of product objects
+  product$: WritableSignal<Product> = signal({} as Product);
   countries$: WritableSignal<string[]> = signal([]);
 
+  // dependency injection for making HTTP request
   constructor(private httpClient: HttpClient) {}
 
   getProducts(nameSearch?: string, countryFilter?: string){

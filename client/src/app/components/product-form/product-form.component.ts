@@ -56,9 +56,9 @@ import { Observable } from 'rxjs';
       </mat-form-field>
       <mat-form-field>
         <mat-label>Country</mat-label>
-        <mat-select formControlName="country" required>
+        <mat-select formControlName="country" required [compareWith]="compareCountries">
           @for (country of countries$ | async; track country.code) {
-            <mat-option [value]="{ code: country.code, name: country.name }">
+            <mat-option [value]="country">
               {{ country.name }}
             </mat-option>
           }
@@ -94,15 +94,15 @@ import { Observable } from 'rxjs';
         }
       </mat-form-field>
       <mat-form-field>
-        <mat-label>Images</mat-label>
+        <mat-label>Image</mat-label>
         <input
           matInput
-          formControlName="imageUrls"
-          placeholder="Enter image URLs separated by commas"
+          formControlName="imageUrl"
+          placeholder="Enter image URL"
           required
         />
-        @if (imageUrls.invalid) {
-        <mat-error>At least one image URL must be provided.</mat-error>
+        @if (imageUrl.invalid) {
+        <mat-error>The image URL must be provided.</mat-error>
         }
       </mat-form-field>
       <br/>
@@ -149,7 +149,7 @@ export class ProductFormComponent implements OnInit, OnChanges{
       country: [null, [Validators.required]],
       price: [0, [Validators.required, Validators.min(0)]],
       stock: [0, [Validators.required, Validators.min(0)]],
-      imageUrls: ['', [Validators.required]]
+      imageUrl: ['', [Validators.required]]
     });
     this.countries$ = this.countryService.getCountries();
   }
@@ -183,15 +183,30 @@ export class ProductFormComponent implements OnInit, OnChanges{
       this.productForm.patchValue({
         name: this.initialProduct.name || '',
         description: this.initialProduct.description || '',
-        country: this.initialProduct.country,
+        
         price: this.initialProduct.price || 0,
         stock: this.initialProduct.stock || 0,
-        imageUrls: this.initialProduct.imageUrls.join(', ') || '',
+        imageUrl: this.initialProduct.imageUrl || '',
+      });
+      /*console.log("loaded product:", this.initialProduct);*/
+      /*console.log("loaded product country:", this.country);*/
+      // Set country after countries have been loaded
+      this.countries$.subscribe(countries => {
+        if (this.initialProduct && this.initialProduct.country){
+          const selectedCountry = countries.find(c => c.code === this.initialProduct?.country.code);
+          if (selectedCountry) {
+            this.productForm.get('country')?.setValue(selectedCountry);
+          }
+        }
       });
     } else {
       this.productForm.reset();
     }
   };
+
+  compareCountries(country1: any, country2: any): boolean {
+    return country1 && country2 ? country1.code === country2.code : country1 === country2;
+  }
 
 // Form Accessors 
   get name() {
@@ -209,8 +224,8 @@ export class ProductFormComponent implements OnInit, OnChanges{
   get stock() {
     return this.productForm.get('stock')!;
   }
-  get imageUrls() {
-    return this.productForm.get('imageUrls')!;
+  get imageUrl() {
+    return this.productForm.get('imageUrl')!;
   }
 
   submitForm() {
@@ -218,7 +233,6 @@ export class ProductFormComponent implements OnInit, OnChanges{
       const formValue = this.productForm.value;
       const product: Product = {
         ...formValue,
-        imageUrls: formValue.imageUrls.split(',').map((url: string) => url.trim()).filter(Boolean)
       };
       this.formSubmitted.emit(product);
     }

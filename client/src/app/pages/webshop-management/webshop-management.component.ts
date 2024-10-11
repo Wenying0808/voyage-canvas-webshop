@@ -93,7 +93,7 @@ import { Product } from '../../product.interface';
 })
 
 export class WebshopMnagementComponent implements OnInit {
-  products: Signal<Product[]>;
+  products: Signal<Product[]>; //ready only
   countries: Signal<string[]>;
 
   displayedColumns: string[] = [

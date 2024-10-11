@@ -10,7 +10,7 @@ import { Product } from '../../product.interface';
   imports: [ MatButtonModule, MatIconModule ],
   template: `
     <div class="product-card">
-      <img class="product-card-image" [src]="product.imageUrls[0]" alt="{{product.name}}">
+      <img class="product-card-image" [src]="product.imageUrl" alt="{{product.name}}">
       <div class="product-card-header">
           <div class="product-card-header-name">{{ product.name }}</div>
           <div class="product-card-header-chip">{{ product.country.name }}</div>
