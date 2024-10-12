@@ -11,16 +11,11 @@ import { MatCardModule } from '@angular/material/card';
   imports: [ProductFormComponent, MatCardModule],
   template: `
     <div class="add-product">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Add a New Product</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <app-product-form
-            (formSubmitted)="addProduct($event)"
-          ></app-product-form>
-        </mat-card-content>
-      </mat-card>
+      <app-product-form
+        [formMode]="'add'"
+        (formSubmitted)="addProduct($event)"
+        (formCancelled)="cancel()"
+      ></app-product-form>
     </div>
   `,
   styleUrl: `./add-product.component.scss`,
@@ -42,5 +37,8 @@ export class AddProductComponent {
       },
     });
     this.productService.getProducts();
+  }
+  cancel() {
+    this.router.navigate(['/webshop-management']);
   }
 }

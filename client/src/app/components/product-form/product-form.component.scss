@@ -4,3 +4,18 @@
     flex-direction: column;
     gap: 16px;
 }
+
+.product-form-title{
+    color:black;
+    font-size: 20px;
+    width: 100%;
+    text-align: center;
+}
+
+.product-form-buttions{
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}

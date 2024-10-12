@@ -1,18 +1,25 @@
-import { Component, Input, input, Output, EventEmitter, effect, } from '@angular/core';
+import { Component, Input, input, Output, EventEmitter, effect, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { Product } from '../../product.interface';
+import { CountryService } from '../../country.service';
+import { AsyncPipe, NgForOf } from '@angular/common';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatInputModule,
     MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
     MatButtonModule,
+    AsyncPipe, 
+    NgForOf
   ],
   template: `
     <form 
@@ -21,6 +28,10 @@ import { Product } from '../../product.interface';
       [formGroup]="productForm" 
       (submit)="submitForm()"
     >
+      <div class="product-form-title">
+        {{ formTitle }}
+      </div>
+      <br/>
       <mat-form-field>
         <mat-label>Name</mat-label>
         <input 
@@ -47,14 +58,15 @@ import { Product } from '../../product.interface';
       </mat-form-field>
       <mat-form-field>
         <mat-label>Country</mat-label>
-        <input
-          matInput
-          placeholder="Country"
-          formControlName="country"
-          required
-        />
+        <mat-select formControlName="country" required [compareWith]="compareCountries">
+          @for (country of countries$ | async; track country.code) {
+            <mat-option [value]="country">
+              {{ country.name }}
+            </mat-option>
+          }
+        </mat-select>
         @if (country.invalid) {
-        <mat-error>Country must be filled in.</mat-error>
+        <mat-error>Country must be selected.</mat-error>
         }
       </mat-form-field>
       <mat-form-field>
@@ -84,61 +96,120 @@ import { Product } from '../../product.interface';
         }
       </mat-form-field>
       <mat-form-field>
-        <mat-label>Images</mat-label>
+        <mat-label>Image</mat-label>
         <input
           matInput
-          formControlName="imageUrls"
-          placeholder="Enter image URLs separated by commas"
+          formControlName="imageUrl"
+          placeholder="Enter image URL"
           required
         />
-        @if (imageUrls.invalid) {
-        <mat-error>At least one image URL must be provided.</mat-error>
+        @if (imageUrl.invalid) {
+        <mat-error>The image URL must be provided.</mat-error>
         }
       </mat-form-field>
       <br/>
-      <button mat-raised-button
-        color="primary"
-        type="submit"
-        [disabled]="productForm.invalid"
-      >
-        Add
-      </button>
+      <div class="product-form-buttions">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="cancel()"
+        >
+          Cancel
+        </button>
+        <button 
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="productForm.invalid"
+        >
+        {{ submitButtonText }}
+        </button>
+      </div>
     </form>
   `,
   styleUrl: `./product-form.component.scss`
 })
 
-export class ProductFormComponent {
+export class ProductFormComponent implements OnInit, OnChanges{
   
-  initialState = input<Product>();
-
+  @Input() initialProduct: Product | null = null;
+  @Input() formMode: 'add' | 'edit' = 'add';
   @Output() forValuesChanged = new EventEmitter<Product>();
-
+  @Output() formCancelled = new EventEmitter<void>();
   @Output() formSubmitted = new EventEmitter<Product>();
 
   productForm: FormGroup;
+  formTitle: string = 'Add Product';
+  submitButtonText: string = 'Add';
+  countries$: Observable<{ name: string; code: string }[]>;
 
-
-  constructor(private formBuilder: FormBuilder){
+  constructor(
+    private formBuilder: FormBuilder, 
+    private countryService: CountryService
+  ){
     this.productForm = this.formBuilder.group({
       name: ['', [Validators.required]],
       description: ['', [Validators.required]],
-      country: ['', [Validators.required]],
+      country: [null, [Validators.required]],
       price: [0, [Validators.required, Validators.min(0)]],
       stock: [0, [Validators.required, Validators.min(0)]],
-      imageUrls: ['', [Validators.required]]
-    })
+      imageUrl: ['', [Validators.required]]
+    });
+    this.countries$ = this.countryService.getCountries();
   }
 
   ngOnInit() {
-    this.productForm.setValue({
-      name: this.initialState()?.name || '',
-      description: this.initialState()?.description || '',
-      country: this.initialState()?.country || '',
-      price: this.initialState()?.price || 0,
-      stock: this.initialState()?.stock || 0,
-      imageUrls: this.initialState()?.imageUrls.join(', ') || '',
-    })
+    this.updateFormMode();
+    this.initializeForm();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['formMode']) {
+      this.updateFormMode();
+    }
+    if (changes['initialProduct']) {
+      this.initializeForm();
+    }
+  }
+
+  private updateFormMode(){
+    if(this.formMode === 'edit'){
+      this.formTitle = 'Edit Product';
+      this.submitButtonText = 'Update';
+    } else {
+      this.formTitle = 'Add Product';
+      this.submitButtonText = 'Add';
+    }
+  }
+
+  private initializeForm(){
+    if (this.initialProduct) {
+      this.productForm.patchValue({
+        name: this.initialProduct.name || '',
+        description: this.initialProduct.description || '',   
+        price: this.initialProduct.price || 0,
+        stock: this.initialProduct.stock || 0,
+        imageUrl: this.initialProduct.imageUrl || '',
+      });
+      /*console.log("loaded product:", this.initialProduct);*/
+
+      // Set country after countries have been loaded as patchValues for ma-select doesn't work
+      this.countries$.subscribe(countries => {
+        if (this.initialProduct && this.initialProduct.country){
+          const selectedCountry = countries.find(c => c.code === this.initialProduct?.country.code);
+          if (selectedCountry) {
+            this.productForm.get('country')?.setValue(selectedCountry);
+          }
+        }
+      });
+    } else {
+      this.productForm.reset();
+    }
+  };
+
+  // for mat-select component
+  compareCountries(country1: any, country2: any): boolean {
+    return country1 && country2 ? country1.code === country2.code : country1 === country2;
   }
 
 // Form Accessors 
@@ -157,8 +228,8 @@ export class ProductFormComponent {
   get stock() {
     return this.productForm.get('stock')!;
   }
-  get imageUrls() {
-    return this.productForm.get('imageUrls')!;
+  get imageUrl() {
+    return this.productForm.get('imageUrl')!;
   }
 
   submitForm() {
@@ -166,10 +237,16 @@ export class ProductFormComponent {
       const formValue = this.productForm.value;
       const product: Product = {
         ...formValue,
-        imageUrls: formValue.imageUrls.split(',').map((url: string) => url.trim()).filter(Boolean)
+
+        imageUrl: formValue.imageUrl,
+        // Remove imageUrls from the submitted product
+        imageUrls: undefined
       };
-      this.formSubmitted.emit(product);
+      this.formSubmitted.emit(product); //send data from child component to parent component
     }
+  }
+  cancel() {
+    this.formCancelled.emit();
   }
 
 }

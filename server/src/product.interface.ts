@@ -4,8 +4,11 @@ export interface Product {
     _id?: mongodb.ObjectId;
     name: string;
     description: string;
-    country: string;
+    country: {
+        code: string;
+        name: string;
+    };
     price: number;
     stock: number;
-    imageUrls: string[];
+    imageUrl: string;
 }
