@@ -1,10 +1,12 @@
 import * as mongodb from "mongodb";
 import { Product } from "./product.interface";
 import { User } from "./user.interface";
+import { Basket } from "./basket.interface";
 
 export const collections: {
     products?: mongodb.Collection<Product>;
     users?: mongodb.Collection<User>;
+    baskets?: mongodb.Collection<Basket>
 } = {};
 
 export async function connectToDatabase(uri: string) {
@@ -93,6 +95,46 @@ async function applySchemaValidation(db: mongodb.Db) {
             }
         }
     };
+    const basketSchema = {
+        $jsonSchema:{
+            bsonType: "object",
+            required: ["items"],
+            additionalProperties: false,
+            properties: {
+                _id: {},
+                userId: {
+                    bsonType: "string",
+                    description: "'userId' is a string",
+                },
+                sessionId: {
+                    bsonType: "string",
+                    description: "'sessionId' is a string",
+                },
+                items: {
+                    bsonType: "array",
+                    description: "'items' is required and is a array of string",
+                    items: {
+                        bsonType: "object",
+                        required: ["productId", "quantity", "price"],
+                        properties: {
+                            productId: {
+                                bsonType: "string",
+                                description: "'productId' is required and is a string"
+                            },
+                            quantity: {
+                                bsonType: "int",
+                                description: "'quantity' is required and is an integer"
+                            },
+                            price: {
+                                bsonType: "number",
+                                description: "'price' is required and is a number"
+                            }
+                        }
+                    }
+                },
+            }
+        }
+    }
 
     // Try applying the modification to the collection, if the collection doesn't exist, create it
    await db.command({
@@ -111,5 +153,14 @@ async function applySchemaValidation(db: mongodb.Db) {
             if (error.codeName === "NamespaceNotFound") {
                 await db.createCollection("users", {validator: userSchema});
             }
+    });
+
+    await db.command({
+        collMod: "baskets",
+        validator: basketSchema
+    }).catch(async (error: mongodb.MongoServerError) => {
+        if (error.codeName === "NamespaceNotFound") {
+            await db.createCollection("baskets", {validator: basketSchema});
+        }
     });
 }
