@@ -1,53 +1,78 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal, WritableSignal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { BasketProductCardComponent } from '../../components/basket-product-card/basket-product-card.component';
 import { Product } from '../../product.interface';
-import { BasketItem } from '../../basket.interface';
+import { Basket, BasketItem } from '../../basket.interface';
+import { BasketService } from '../../basket.service';
+import { AuthService } from '../../auth.service';
+import { SessionService } from '../../session.service';
+import { firstValueFrom, Observable, switchMap } from 'rxjs';
+import { ProductService } from '../../product.service';
 
 
 @Component({
   selector: 'app-basket',
   standalone: true,
-  imports: [BasketProductCardComponent],
+  imports: [CommonModule, BasketProductCardComponent],
   template: `
-    <div class="basket">
-      <app-basket-product-card 
-      [product]="sampleProduct" 
-      [basketItem]="sampleBasketItem"
-      (quantityChange)="onQuantityChange($event)"
-      (removeItem)="onRemoveItem()"
-      />
+    <div class="basket" *ngIf="basketService.basket$() as basket">
+      <div class="basket-items-list" *ngFor="let item of basket.items">
+        <app-basket-product-card *ngIf="getProductById(item.productId) | async as product"
+          [product]="product" 
+          [basketItem]="item"
+          (quantityChange)="onQuantityChange(item, $event)"
+          (removeItem)="onRemoveItem(item)"
+        />
+      </div>
     <div>
   `,
   styleUrl: `./basket.component.scss`,
 })
 
-export class BasketComponent {
-  sampleProduct: Product = {
-    _id: '1',
-    name: 'Organic Bananas',
-    description: 'Fresh organic bananas from Ecuador',
-    country: {
-      code: 'EC',
-      name: 'Ecuador'
-    },
-    price: 1.99,
-    stock: 100,
-    imageUrl: 'https://via.placeholder.com/300x200?text=Organic+Banana'
-  };
+export class BasketComponent implements OnInit {
 
-  sampleBasketItem: BasketItem = {
-    productId: '1',
-    quantity: 3,
-    price: 1.99
-  };
+  basket$ = {} as WritableSignal<Basket>;
+  basketItems$ = {} as WritableSignal<BasketItem>;
 
-  onQuantityChange(newQuantity: number) {
-    console.log('Quantity changed:', newQuantity);
-    // Here you would typically update your basket state
+  constructor(
+    public basketService: BasketService,
+    private authService: AuthService,
+    private sessionService: SessionService,
+    private productService: ProductService
+  ) {}
+
+  ngOnInit() {
+    this.fetchBasket();
+  }
+  private fetchBasket(): void {
+    this.authService.getCurrentUser().pipe(
+      switchMap(user => {
+        const id = user ? user._id : this.sessionService.getSessionId();
+        return this.basketService.loadBasket(id);
+      })
+    ).subscribe();
+  }
+  
+  getProductById(productId: string): Observable<Product> {
+    return this.productService.getProduct(productId);  // Return observable
   }
 
-  onRemoveItem() {
+  onQuantityChange(item: BasketItem, newQuantity: number) {
+    this.getBasketId().then(id => {
+      this.basketService.updateItemQuantity(id, item.productId, newQuantity).subscribe();
+    });
+    console.log('Quantity changed:', newQuantity);
+  }
+
+  onRemoveItem(item: BasketItem) {
+    this.getBasketId().then(id => {
+      this.basketService.removeItemFromBasket(id, item.productId).subscribe();
+    });
     console.log('Item removed');
-    // Here you would typically remove the item from your basket
+  }
+
+  private async getBasketId(): Promise<string> {
+    const user = await firstValueFrom(this.authService.getCurrentUser());
+    return user ? user._id : this.sessionService.getSessionId();
   }
 }

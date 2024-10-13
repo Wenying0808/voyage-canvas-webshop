@@ -4,6 +4,7 @@
 import { Injectable, signal, WritableSignal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Product } from './product.interface';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -30,11 +31,8 @@ export class ProductService {
     });
   }
 
-  getProduct(id: string){
-    this.httpClient.get<Product>(`${this.url}/products/${id}`).subscribe(product => {
-      this.product$.set(product);
-      return this.product$();
-    })
+  getProduct(id: string): Observable<Product> {
+    return this.httpClient.get<Product>(`${this.url}/products/${id}`);
   }
 
   createProduct(product: Product){

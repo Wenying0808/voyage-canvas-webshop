@@ -48,11 +48,24 @@ basketRouter.post("/:id/items", async (req, res) => {
         const id = req.params.id;
         const item: BasketItem = req.body;
         const query = { $or: [{ userId: id }, { sessionId: id }] };
-        const update = { $push: { items: item }};
 
-        const results = await collections.baskets?.updateOne(query, update);
+        // Check if the item already exists in the basket
+        const basket = await collections.baskets?.findOne(query);
+        const existingItem = basket?.items.find(i => i.productId === item.productId);
 
-        if(results?.modifiedCount){
+        let update;
+        if (existingItem) {
+            // If the item exists, increase the quantity
+            update = { $inc: { "items.$[elem].quantity": item.quantity } };
+        } else {
+            // If the item doesn't exist, add it to the basket
+            update = { $push: { items: item }};
+        }
+
+        const options = existingItem ? { arrayFilters: [{ "elem.productId": item.productId }] } : {};
+        const result = await collections.baskets?.updateOne(query, update, options);
+
+        if(result?.modifiedCount){
             res.status(200).send(`Added item to basket: ${id}`)
         } else {
             res.status(404).send(`Basket not found: ${id}`);
@@ -120,3 +133,47 @@ basketRouter.delete("/:id", async (req, res) => {
         res.status(400).send(error instanceof Error ? error.message : "Unknown error: deleting basket");
     }
 })
+
+/*
+// Merge session basket with user basket
+basketRouter.post("/merge/:sessionId/:userId", async (req, res) => {
+    try {
+        const { sessionId, userId } = req.params;
+        
+        // Find session basket
+        const sessionBasket = await collections.baskets?.findOne({ sessionId });
+        
+        if (!sessionBasket) {
+            return res.status(404).send(`Session basket not found: ${sessionId}`);
+        }
+        
+        // Find or create user basket
+        let userBasket = await collections.baskets?.findOne({ userId });
+        
+        if (!userBasket) {
+            userBasket = { userId, items: [] };
+            await collections.baskets?.insertOne(userBasket);
+        }
+        
+        // Merge items
+        for (const sessionItem of sessionBasket.items) {
+            const existingItem = userBasket.items.find(item => item.productId === sessionItem.productId);
+            if (existingItem) {
+                existingItem.quantity += sessionItem.quantity;
+            } else {
+                userBasket.items.push(sessionItem);
+            }
+        }
+        
+        // Update user basket
+        await collections.baskets?.updateOne({ userId }, { $set: { items: userBasket.items } });
+        
+        // Delete session basket
+        await collections.baskets?.deleteOne({ sessionId });
+        
+        res.status(200).send(`Merged session basket with user basket: ${userId}`);
+    } catch (error) {
+        res.status(400).send(error instanceof Error ? error.message : "Unknown error: merging baskets");
+    }
+});
+*/

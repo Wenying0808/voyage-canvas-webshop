@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
 import { ProductService } from '../../product.service';
+import { BasketService } from '../../basket.service';
 import { Product } from '../../product.interface';
 
 @Component({
   selector: 'app-webshop',
   standalone: true,
   imports: [ProductCardComponent, CommonModule],
-  providers: [ProductService],
+  providers: [ProductService, BasketService],
   template: `
     <div class="webshop" >
       <div class="webshop-product" *ngFor="let product of products$()">
@@ -23,8 +24,9 @@ import { Product } from '../../product.interface';
 export class WebshopComponent implements OnInit{
   products$ = {} as WritableSignal<Product[]>;
 
-  constructor(private productService: ProductService) {
-    
+  constructor(
+    private productService: ProductService, 
+    private basketService: BasketService) {
   }
 
   ngOnInit() {
