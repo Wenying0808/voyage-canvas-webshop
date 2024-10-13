@@ -4,9 +4,11 @@ import cors from "cors";
 import { connectToDatabase } from "./database";
 import { productRouter } from "./product.routes";
 import { userRouter } from "./user.routes";
+import { basketRouter } from "./basket.routes";
 import passport from './auth';
 import session from 'express-session';
 import MongoStore from "connect-mongo";
+
 
 
 // Load environment variables from the .env file, where the ATLAS_URI is configured
@@ -61,6 +63,7 @@ connectToDatabase(MONGODB_URI)
 
     app.use("/products", productRouter);
     app.use("/users", userRouter);
+    app.use("/baskets", basketRouter);
 
     // Auth routes
     app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
