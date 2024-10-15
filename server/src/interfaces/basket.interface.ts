@@ -1,12 +1,14 @@
+import { Product } from "./product.interface";
+
 export interface BasketItem {
-    productId: string;
+    product: Product;
     quantity: number;
-    price: number;
 }
   
 export interface Basket {
-_id?: string;
-userId: string | null;  // null for non-logged in users
-sessionId: string;      // for non-logged in users
-items: BasketItem[];
+    _id?: string;
+    items: BasketItem[];
+    userId: string | null;  // null for non-logged in users
+    sessionId: string;      // for non-logged in users
 }
+  

@@ -6,6 +6,36 @@ import { Basket, BasketItem } from "../interfaces/basket.interface";
 export const basketRouter = express.Router();
 basketRouter.use(express.json());
 
+// Create a new basket
+basketRouter.post("/", async (req, res) => {
+    try {
+        const basket: Basket = req.body;
+
+        // check if there is already a basket for the user or session
+        const existingBasket = await collections.baskets?.findOne(
+            {
+                $or: [{ userId: basket.userId }, { sessionId: basket.sessionId }]
+            }
+        )
+
+        // if a basket already exists, return a message
+        if (existingBasket) {
+            return res.status(400).send("A basket already exists for this user or session.");
+        }
+        // otherwise, create a new basket
+        const result = await collections.baskets?.insertOne(basket);
+        if (result?.insertedId) {
+            res.status(201).send({ message: "Basket created successfully", basketId: result.insertedId });
+        } else {
+            res.status(500).send("Failed to create basket");
+        }
+
+       
+    } catch (error) {
+        res.status(400).send(error instanceof Error ? error.message : "Unknown error: creating a new basket");
+    }
+})
+
 // Get basket by userId or sessionId
 basketRouter.get("/:id", async (req, res) => {
     try {
@@ -22,26 +52,6 @@ basketRouter.get("/:id", async (req, res) => {
     }
 })
 
-// Create or update basket
-basketRouter.post("/", async (req, res) => {
-    try {
-        const basket: Basket = req.body;
-        const query = { $or: [{ userId: basket.userId }, { sessionId: basket.sessionId }] };
-        const update = { $set: basket };
-        const options = { upsert: true, returnOriginal: false }; // if no document matches the query, a new document will be created; return the modified document rather than the original
-
-        const result = await collections.baskets?.findOneAndUpdate(query, update, options);
-
-        if (result) {
-            res.status(200).send(result);
-        } else {
-            res.status(500).send("Failed to create or update basket");
-        }
-    } catch (error) {
-        res.status(400).send(error instanceof Error ? error.message : "Unknown error: creating or updating a basket");
-    }
-})
-
 // Add item to basket
 basketRouter.post("/:id/items", async (req, res) => {
     try {
@@ -51,7 +61,7 @@ basketRouter.post("/:id/items", async (req, res) => {
 
         // Check if the item already exists in the basket
         const basket = await collections.baskets?.findOne(query);
-        const existingItem = basket?.items.find(i => i.productId === item.productId);
+        const existingItem = basket?.items.find(i => i.product._id === item.product._id);
 
         let update;
         if (existingItem) {
@@ -62,7 +72,7 @@ basketRouter.post("/:id/items", async (req, res) => {
             update = { $push: { items: item }};
         }
 
-        const options = existingItem ? { arrayFilters: [{ "elem.productId": item.productId }] } : {};
+        const options = existingItem ? { arrayFilters: [{ "elem.productId": item.product._id }] } : {};
         const result = await collections.baskets?.updateOne(query, update, options);
 
         if(result?.modifiedCount){
@@ -104,7 +114,7 @@ basketRouter.delete("/:id/items/:productId", async (req, res) => {
         const query = {
             $or: [{ userId: id }, { sessionId: id }],
         }
-        const update = { $pull: { items: { productId: productId } } }
+        const update = { $pull: { items: { product: { _id: productId } } } }
         const result = await collections.baskets?.updateOne(query, update);
 
         if (result?.modifiedCount) {

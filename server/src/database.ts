@@ -115,20 +115,16 @@ async function applySchemaValidation(db: mongodb.Db) {
                     description: "'items' is required and is a array of string",
                     items: {
                         bsonType: "object",
-                        required: ["productId", "quantity", "price"],
+                        required: ["product", "quantity"],
                         properties: {
-                            productId: {
-                                bsonType: "string",
-                                description: "'productId' is required and is a string"
+                            product: {
+                                bsonType: "object",
+                                description: "'product' is required and is an object"
                             },
                             quantity: {
                                 bsonType: "int",
                                 description: "'quantity' is required and is an integer"
                             },
-                            price: {
-                                bsonType: "number",
-                                description: "'price' is required and is a number"
-                            }
                         }
                     }
                 },
