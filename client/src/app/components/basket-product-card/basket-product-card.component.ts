@@ -1,10 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Product } from '../../product.interface';
-import { BasketItem } from '../../basket.interface';
+import { Product } from '../../interfaces/product.interface';
+import { BasketItem } from '../../interfaces/basket.interface';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { BasketService } from '../../services/basket.service';
 
 
 @Component({
@@ -13,11 +14,11 @@ import { MatIconModule } from '@angular/material/icon';
   imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule],
   template: `
     <div class="basket-product-card">
-      <img class="basket-product-card-image" [src]="product.imageUrl" alt="{{product.name}}">
+      <img class="basket-product-card-image" [src]="basketItem.product.imageUrl" alt="{{basketItem.product.name}}">
       <div class="basket-product-card-info">
-        <div class="basket-product-card-info-name">{{ product.name }}</div>
-        <div class="basket-product-card-info-country">{{ product.country.name }}</div>
-        <div class="basket-product-card-info-price">€{{ product.price }}</div>
+        <div class="basket-product-card-info-name">{{ basketItem.product.name }}</div>
+        <div class="basket-product-card-info-country">{{ basketItem.product.country.name }}</div>
+        <div class="basket-product-card-info-price">€{{ basketItem.product.price }}</div>
       </div>
       <div class="basket-product-card-controls">
         <input 
@@ -28,7 +29,7 @@ import { MatIconModule } from '@angular/material/icon';
           [(ngModel)]="basketItem.quantity" 
           (ngModelChange)="onQuantityChange()"
         >
-        <button (click)="onRemove()">
+        <button (click)="onRemove(basketItem.product)">
           <mat-icon mat-mini-fab>delete</mat-icon>
         </button>
       </div>
@@ -42,11 +43,14 @@ export class BasketProductCardComponent {
   @Output() quantityChange = new EventEmitter<number>();
   @Output() removeItem = new EventEmitter<void>();
 
+  constructor(private basketService: BasketService) {} 
+  
   onQuantityChange() {
     this.quantityChange.emit(this.basketItem.quantity)
   }
 
-  onRemove() {
+  onRemove(product: Product) {
+    this.basketService.removeItemFromBasket(product);
     this.removeItem.emit()
   }
 }

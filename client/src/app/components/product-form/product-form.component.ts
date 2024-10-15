@@ -4,8 +4,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
-import { Product } from '../../product.interface';
-import { CountryService } from '../../country.service';
+import { Product } from '../../interfaces/product.interface';
+import { CountryService } from '../../services/country.service';
 import { AsyncPipe, NgForOf } from '@angular/common';
 import { Observable } from 'rxjs';
 

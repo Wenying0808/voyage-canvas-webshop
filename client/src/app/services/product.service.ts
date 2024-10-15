@@ -3,7 +3,7 @@
 
 import { Injectable, signal, WritableSignal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Product } from './product.interface';
+import { Product } from '../interfaces/product.interface';
 import { Observable } from 'rxjs';
 
 @Injectable({

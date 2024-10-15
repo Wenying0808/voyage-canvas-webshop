@@ -2,8 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { AuthService } from '../../auth.service';
-import { User } from '../../user.interface';
+import { AuthService } from '../../services/auth.service';
+import { User } from '../../interfaces/user.interface';
 import { Subscription } from 'rxjs';
 
 @Component({

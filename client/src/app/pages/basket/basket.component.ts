@@ -1,13 +1,13 @@
-import { Component, OnInit, signal, WritableSignal } from '@angular/core';
+import { Component, OnInit, Signal, signal, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BasketProductCardComponent } from '../../components/basket-product-card/basket-product-card.component';
-import { Product } from '../../product.interface';
-import { Basket, BasketItem } from '../../basket.interface';
-import { BasketService } from '../../basket.service';
-import { AuthService } from '../../auth.service';
-import { SessionService } from '../../session.service';
+import { Product } from '../../interfaces/product.interface';
+import { Basket, BasketItem } from '../../interfaces/basket.interface';
+import { BasketService } from '../../services/basket.service';
+import { AuthService } from '../../services/auth.service';
+import { SessionService } from '../../services/session.service';
 import { firstValueFrom, Observable, switchMap } from 'rxjs';
-import { ProductService } from '../../product.service';
+import { ProductService } from '../../services/product.service';
 
 
 @Component({
@@ -15,64 +15,27 @@ import { ProductService } from '../../product.service';
   standalone: true,
   imports: [CommonModule, BasketProductCardComponent],
   template: `
-    <div class="basket" *ngIf="basketService.basket$() as basket">
-      <div class="basket-items-list" *ngFor="let item of basket.items">
-        <app-basket-product-card *ngIf="getProductById(item.productId) | async as product"
-          [product]="product" 
-          [basketItem]="item"
-          (quantityChange)="onQuantityChange(item, $event)"
-          (removeItem)="onRemoveItem(item)"
-        />
+    <div class="basket" >
+      {{ basketItems$() | json }}
+      <div class="basket-items-list" *ngFor="let item of basketItems$()">
+        <app-basket-product-card  [basketItem]="item"/>
       </div>
     <div>
   `,
   styleUrl: `./basket.component.scss`,
 })
 
-export class BasketComponent implements OnInit {
-
-  basket$ = {} as WritableSignal<Basket>;
-  basketItems$ = {} as WritableSignal<BasketItem>;
+export class BasketComponent implements OnInit{
+  basketItems$ = {} as WritableSignal<BasketItem[]>;
 
   constructor(
-    public basketService: BasketService,
-    private authService: AuthService,
-    private sessionService: SessionService,
-    private productService: ProductService
-  ) {}
-
+    private basketService: BasketService,
+  ) {
+  }
   ngOnInit() {
-    this.fetchBasket();
-  }
-  private fetchBasket(): void {
-    this.authService.getCurrentUser().pipe(
-      switchMap(user => {
-        const id = user ? user._id : this.sessionService.getSessionId();
-        return this.basketService.loadBasket(id);
-      })
-    ).subscribe();
-  }
-  
-  getProductById(productId: string): Observable<Product> {
-    return this.productService.getProduct(productId);  // Return observable
+    this.basketItems$ = this.basketService.basketItems$;
+    this.basketService.getBasketItems();
+    console.log("loaded basketItems:",this.basketItems$())
   }
 
-  onQuantityChange(item: BasketItem, newQuantity: number) {
-    this.getBasketId().then(id => {
-      this.basketService.updateItemQuantity(id, item.productId, newQuantity).subscribe();
-    });
-    console.log('Quantity changed:', newQuantity);
-  }
-
-  onRemoveItem(item: BasketItem) {
-    this.getBasketId().then(id => {
-      this.basketService.removeItemFromBasket(id, item.productId).subscribe();
-    });
-    console.log('Item removed');
-  }
-
-  private async getBasketId(): Promise<string> {
-    const user = await firstValueFrom(this.authService.getCurrentUser());
-    return user ? user._id : this.sessionService.getSessionId();
-  }
 }

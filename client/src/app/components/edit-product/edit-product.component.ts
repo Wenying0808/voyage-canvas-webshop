@@ -1,7 +1,7 @@
 import { Component, OnInit, WritableSignal } from '@angular/core';
 import { ProductFormComponent } from '../product-form/product-form.component';
-import { Product } from '../../product.interface';
-import { ProductService } from '../../product.service';
+import { Product } from '../../interfaces/product.interface';
+import { ProductService } from '../../services/product.service';
 import { MatCardModule } from '@angular/material/card';
 import { ActivatedRoute, Router } from '@angular/router';
 

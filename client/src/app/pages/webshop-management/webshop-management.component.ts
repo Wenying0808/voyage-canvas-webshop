@@ -8,8 +8,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 
-import { ProductService } from '../../product.service';
-import { Product } from '../../product.interface';
+import { ProductService } from '../../services/product.service';
+import { Product } from '../../interfaces/product.interface';
 
 @Component({
   selector: 'app-webshop-management',
