@@ -1,7 +1,7 @@
 import * as express from "express";
 import { ObjectId } from "mongodb";
-import { collections } from "./database";
-import { Basket, BasketItem } from "./basket.interface";
+import { collections } from "../database";
+import { Basket, BasketItem } from "../interfaces/basket.interface";
 
 export const basketRouter = express.Router();
 basketRouter.use(express.json());

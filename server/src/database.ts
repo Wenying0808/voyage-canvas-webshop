@@ -1,7 +1,7 @@
 import * as mongodb from "mongodb";
-import { Product } from "./product.interface";
-import { User } from "./user.interface";
-import { Basket } from "./basket.interface";
+import { Product } from "./interfaces/product.interface";
+import { User } from "./interfaces/user.interface";
+import { Basket } from "./interfaces/basket.interface";
 
 export const collections: {
     products?: mongodb.Collection<Product>;

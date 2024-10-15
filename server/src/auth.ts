@@ -3,7 +3,7 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as MicrosoftStrategy } from 'passport-microsoft';
 import { collections } from './database';
-import { User } from './user.interface';
+import { User } from './interfaces/user.interface';
 import { ObjectId } from 'mongodb';
 
 dotenv.config({ path: '../.env' });
