@@ -18,10 +18,6 @@ import { BasketItem } from '../../interfaces/basket.interface';
       <div class="webshop-product" *ngFor="let product of products$()">
           <app-product-card [product]="product"></app-product-card>
       </div>  
-      {{ basketItems$() | json }}
-      <div class="basket-items-list" *ngFor="let item of basketItems$()">
-        <app-basket-product-card  [basketItem]="item"/>
-      </div>
     </div>
   `,
   styleUrl: `./webshop.component.scss`
@@ -29,23 +25,17 @@ import { BasketItem } from '../../interfaces/basket.interface';
 
 export class WebshopComponent implements OnInit{
   products$ = {} as WritableSignal<Product[]>;
-  basketItems$ = {} as WritableSignal<BasketItem[]>;
+
 
   constructor(
     private productService: ProductService, 
-    private basketService: BasketService
   ) {}
 
   ngOnInit() {
     this.fetchProducts();
-    this.fetchBasket();
   }
   private fetchProducts(): void {
     this.products$ = this.productService.products$;
     this.productService.getProducts();
-  }
-  private fetchBasket(): void {
-    this.basketItems$ = this.basketService.basketItems$;
-    this.basketService.getBasketItems();
   }
 }

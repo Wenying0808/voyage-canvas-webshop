@@ -1,5 +1,6 @@
 import * as dotenv from "dotenv";
 import express from "express";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import { connectToDatabase } from "./database";
 import { productRouter } from "./routes/product.routes";
@@ -43,6 +44,8 @@ connectToDatabase(MONGODB_URI)
     // Body parser middleware
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
+    
+    app.use(cookieParser());
 
     app.use(session({
       secret: SESSION_SECRET,

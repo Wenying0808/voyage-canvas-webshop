@@ -1,14 +1,13 @@
-import { Product } from "./product.interface";
+import * as mongodb from 'mongodb';
 
 export interface BasketItem {
-    product: Product;
+    productId: string; // reference to the _id of product
     quantity: number;
 }
   
 export interface Basket {
-    _id?: string;
+    _id: mongodb.ObjectId;
+    userId: string;
     items: BasketItem[];
-    userId: string | null;  // null for non-logged in users
-    sessionId: string;      // for non-logged in users
 }
   

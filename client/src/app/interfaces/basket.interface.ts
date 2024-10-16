@@ -1,11 +1,12 @@
 import { Product } from "./product.interface";
 
 export interface BasketItem {
-    product: Product;
+    productId: string;
     quantity: number;
 }
   
 export interface Basket {
-    _id?: string;
+    _id: string;
+    userId: string;
     items: BasketItem[];
 }

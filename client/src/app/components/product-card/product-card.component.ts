@@ -4,8 +4,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { Product } from '../../interfaces/product.interface';
 import { BasketService } from '../../services/basket.service';
 import { AuthService } from '../../services/auth.service';
-import { SessionService } from '../../services/session.service';
-import { BasketItem } from '../../interfaces/basket.interface';
+import { ProductService } from '../../services/product.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { catchError, filter, of, switchMap, tap } from 'rxjs';
 
 
 @Component({
@@ -23,7 +24,7 @@ import { BasketItem } from '../../interfaces/basket.interface';
           <div class="product-card-subheader-price">€{{ product.price }}</div>
           <div class="product-card-subheader-bottom">
               <div class="product-card-subheader-bottom-stock">{{ product.stock }}</div>
-              <button class="product-card-subheader-bottom-button" (click)="addToBasket(product)">
+              <button class="product-card-subheader-bottom-button" (click)="addToBasket()" [disabled]="isAddingToBasket">
                   <mat-icon mat-mini-fab>add_shopping_cart</mat-icon>
               </button>
           </div>
@@ -34,15 +35,36 @@ import { BasketItem } from '../../interfaces/basket.interface';
 })
 export class ProductCardComponent {
   @Input() product!: Product;
+  isAddingToBasket = false;
 
   constructor(
+    private productService: ProductService,
     private basketService: BasketService,
     private authService: AuthService,
-    private sessionService: SessionService
+    private snackBar: MatSnackBar,
   ) {}
 
-  addToBasket(product: Product) {
-    this.basketService.addItemToBasket(product);
-    console.log ("add to basket button is triggered", product);
+  addToBasket() {
+    const productId = this.product._id;
+    this.isAddingToBasket = true;
+    return this.authService.currentUser.pipe(
+      tap( user => {
+          if(!user) {
+            this.snackBar.open("Please log in to add items to your basket")
+          }
+        }
+      ),
+      filter(user => !!user),
+      switchMap( user => this.basketService.addToBasket(user._id, { productId, quantity: 1 })),
+      catchError(error  => {
+        console.error('Error adding to basket:', error);
+        this.snackBar.open('Failed to add item to basket', 'Close', { duration: 3000 });
+        return of(null); // Return null for potential side effects
+      }),
+      tap(() => {
+        this.isAddingToBasket = false,
+        this.snackBar.open('Item added to basket', 'Close', { duration: 3000 });
+      })
+    )
   }
 }

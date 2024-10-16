@@ -16,11 +16,16 @@ export async function connectToDatabase(uri: string) {
     const db = client.db("voyage-canvas-webshop");
     await applySchemaValidation(db);
 
+    console.log("Connected to database!");
+
     const productsCollection = db.collection<Product>("products");
     collections.products = productsCollection;
 
     const usersCollection = db.collection<User>("users");
     collections.users = usersCollection;
+
+    const basketsCollection = db.collection<Basket>("baskets");
+    collections.baskets = basketsCollection;
 }
 
 async function applySchemaValidation(db: mongodb.Db) {
@@ -98,28 +103,24 @@ async function applySchemaValidation(db: mongodb.Db) {
     const basketSchema = {
         $jsonSchema:{
             bsonType: "object",
-            required: ["items"],
+            required: ["items", "userId"],
             additionalProperties: false,
             properties: {
                 _id: {},
                 userId: {
-                    bsonType: "string",
-                    description: "'userId' is a string",
-                },
-                sessionId: {
-                    bsonType: "string",
-                    description: "'sessionId' is a string",
+                    bsonType: ["string", "null"],
+                    description: "'userId' is a string or null for non-logged in users",
                 },
                 items: {
                     bsonType: "array",
-                    description: "'items' is required and is a array of string",
+                    description: "'items' is required and is a array of basketItem",
                     items: {
                         bsonType: "object",
-                        required: ["product", "quantity"],
+                        required: ["productId", "quantity"],
                         properties: {
-                            product: {
-                                bsonType: "object",
-                                description: "'product' is required and is an object"
+                            productId: {
+                                bsonType: "string",
+                                description: "'productId' is a string",
                             },
                             quantity: {
                                 bsonType: "int",
@@ -127,10 +128,11 @@ async function applySchemaValidation(db: mongodb.Db) {
                             },
                         }
                     }
+                    }
                 },
             }
-        }
-    }
+    };
+    
 
     // Try applying the modification to the collection, if the collection doesn't exist, create it
    await db.command({

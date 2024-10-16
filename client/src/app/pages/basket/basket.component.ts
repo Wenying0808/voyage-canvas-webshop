@@ -6,7 +6,7 @@ import { Basket, BasketItem } from '../../interfaces/basket.interface';
 import { BasketService } from '../../services/basket.service';
 import { AuthService } from '../../services/auth.service';
 import { SessionService } from '../../services/session.service';
-import { firstValueFrom, Observable, switchMap } from 'rxjs';
+import { catchError, firstValueFrom, Observable, of, switchMap } from 'rxjs';
 import { ProductService } from '../../services/product.service';
 
 
@@ -16,9 +16,8 @@ import { ProductService } from '../../services/product.service';
   imports: [CommonModule, BasketProductCardComponent],
   template: `
     <div class="basket" >
-      {{ basketItems$() | json }}
-      <div class="basket-items-list" *ngFor="let item of basketItems$()">
-        <app-basket-product-card  [basketItem]="item"/>
+      <div class="basket-items-list" *ngIf="basket$ | async as basket">
+        <app-basket-product-card  *ngFor="let item of basket.items" [basketItem]="item"/>
       </div>
     <div>
   `,
@@ -26,16 +25,28 @@ import { ProductService } from '../../services/product.service';
 })
 
 export class BasketComponent implements OnInit{
-  basketItems$ = {} as WritableSignal<BasketItem[]>;
+
+  basket$: Observable<Basket | null> = of(null);
 
   constructor(
+    private authService: AuthService,
     private basketService: BasketService,
   ) {
   }
   ngOnInit() {
-    this.basketItems$ = this.basketService.basketItems$;
-    this.basketService.getBasketItems();
-    console.log("loaded basketItems:",this.basketItems$())
+    this.basket$ = this.authService.currentUser.pipe(
+      switchMap(user => {
+        if (user) {
+          console.log("user found to load basket", user);
+          return this.basketService.getBasket(user._id);
+        } else {
+          return of(null);
+        }
+      }),
+      catchError(error => {
+        console.error('Error loading basket', error);
+        return of(null);
+      })
+    );
   }
-
 }
