@@ -1,9 +1,10 @@
-import { Component, OnInit, WritableSignal } from '@angular/core';
+import { Component, OnInit, signal, WritableSignal } from '@angular/core';
 import { ProductFormComponent } from '../product-form/product-form.component';
 import { Product } from '../../interfaces/product.interface';
 import { ProductService } from '../../services/product.service';
 import { MatCardModule } from '@angular/material/card';
 import { ActivatedRoute, Router } from '@angular/router';
+import { switchMap, tap } from 'rxjs';
 
 @Component({
   selector: 'app-edit-product',
@@ -23,7 +24,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class EditProductComponent implements OnInit {
 
-  product = {} as WritableSignal<Product>;
+  product: WritableSignal<Product | null> = signal(null);
 
   constructor(
     private router: Router,
@@ -32,17 +33,29 @@ export class EditProductComponent implements OnInit {
   ){}
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      alert('No id provided for product edition');
-    }
-    this.productService.getProduct(id!);
-    this.product = this.productService.product$;
+    this.route.paramMap.pipe(
+      switchMap(params => {
+        const id = params.get('id');
+        if (!id) {
+          throw new Error('No id provided for product edition');
+        }
+        return this.productService.getProduct(id);
+      }),
+      tap(product => {
+        console.log('Fetched product:', product);
+        this.product.set(product);
+      })
+    ).subscribe({
+      error: (error) => {
+        console.error('Error fetching product:', error);
+        alert('Failed to load product data');
+      }
+    });
   }
 
-  editProduct(product: Product){
+  editProduct(updatedProduct: Product){
     this.productService
-    .updateProduct(this.product()._id || '', product)
+    .updateProduct(this.product()?._id || '', updatedProduct)
     .subscribe({
       next: () => {
         this.router.navigate(['/webshop-management']);

@@ -1,8 +1,7 @@
-import { Injectable, signal, computed, effect, WritableSignal, Signal } from '@angular/core';
+import { Injectable, signal, WritableSignal, Signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError, of, BehaviorSubject, map } from 'rxjs';
 import { Basket, BasketItem } from '../interfaces/basket.interface';
-import { SessionService } from './session.service';
 import { Product } from '../interfaces/product.interface';
 import { AuthService } from './auth.service';
 
@@ -26,9 +25,10 @@ export class BasketService {
     return this.httpClient.get<Basket>(`${this.apiUrl}/${userId}`);
   }
 
-  addToBasket(userId: string, item: BasketItem): Observable<string> {
+  addToBasket(userId: string, item: BasketItem): Observable<any> {
     return this.httpClient.post<string>(`${this.apiUrl}/${userId}/items`, item);
   }
+
   updateBasketItemQuantity(userId: string, productId: string, quantity: number): Observable<string> {
     return this.httpClient.put<string>(`${this.apiUrl}/${userId}/items/${productId}`, { quantity });
   }

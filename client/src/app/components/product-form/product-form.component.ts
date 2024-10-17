@@ -151,8 +151,8 @@ export class ProductFormComponent implements OnInit, OnChanges{
       name: ['', [Validators.required]],
       description: ['', [Validators.required]],
       country: [null, [Validators.required]],
-      price: [0, [Validators.required, Validators.min(0)]],
-      stock: [0, [Validators.required, Validators.min(0)]],
+      price: [0, [Validators.required, Validators.min(1)]],
+      stock: [0, [Validators.required, Validators.min(1)]],
       imageUrl: ['', [Validators.required]]
     });
     this.countries$ = this.countryService.getCountries();
@@ -184,6 +184,7 @@ export class ProductFormComponent implements OnInit, OnChanges{
 
   private initializeForm(){
     if (this.initialProduct) {
+      console.log('Initializing form with product:', this.initialProduct);
       this.productForm.patchValue({
         name: this.initialProduct.name || '',
         description: this.initialProduct.description || '',   
@@ -191,7 +192,6 @@ export class ProductFormComponent implements OnInit, OnChanges{
         stock: this.initialProduct.stock || 0,
         imageUrl: this.initialProduct.imageUrl || '',
       });
-      /*console.log("loaded product:", this.initialProduct);*/
 
       // Set country after countries have been loaded as patchValues for ma-select doesn't work
       this.countries$.subscribe(countries => {
@@ -203,6 +203,7 @@ export class ProductFormComponent implements OnInit, OnChanges{
         }
       });
     } else {
+      console.log('No initial product, resetting form');
       this.productForm.reset();
     }
   };

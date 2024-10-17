@@ -46,8 +46,9 @@ export class ProductCardComponent {
 
   addToBasket() {
     const productId = this.product._id;
+    const item = { productId, quantity: 1 };
     this.isAddingToBasket = true;
-    return this.authService.currentUser.pipe(
+    this.authService.currentUser.pipe(
       tap( user => {
           if(!user) {
             this.snackBar.open("Please log in to add items to your basket")
@@ -55,7 +56,7 @@ export class ProductCardComponent {
         }
       ),
       filter(user => !!user),
-      switchMap( user => this.basketService.addToBasket(user._id, { productId, quantity: 1 })),
+      switchMap( user => this.basketService.addToBasket(user._id, item)),
       catchError(error  => {
         console.error('Error adding to basket:', error);
         this.snackBar.open('Failed to add item to basket', 'Close', { duration: 3000 });
@@ -65,6 +66,6 @@ export class ProductCardComponent {
         this.isAddingToBasket = false,
         this.snackBar.open('Item added to basket', 'Close', { duration: 3000 });
       })
-    )
+    ).subscribe();
   }
 }
