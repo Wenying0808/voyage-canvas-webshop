@@ -24,7 +24,7 @@ export class BasketService {
   getBasket(userId: string){
     return this.httpClient.get<Basket>(`${this.apiUrl}/${userId}`, { withCredentials: true })
       .pipe(
-        tap(response => console.log('Basket response:', response)),
+        tap(basket => console.log('Basket fetched:', basket)),
         catchError(error => {
           console.error('Error fetching basket:', error);
           return throwError(() => new Error('Failed to fetch basket'));

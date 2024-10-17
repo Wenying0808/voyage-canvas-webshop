@@ -48,7 +48,7 @@ basketRouter.post("/", async (req, res) => {
 // Get basket by userId
 basketRouter.get("/:userId", async (req, res) => {
     try {
-        const userId = req.body.userId;
+        const userId = req.params.userId;
         if (!userId) {
             return res.status(400).send("User ID is required");
         }
@@ -66,7 +66,7 @@ basketRouter.get("/:userId", async (req, res) => {
 // Add item to basket
 basketRouter.post("/:userId/items", async (req, res) => {
     try {
-        const userId = req.body.userId;
+        const userId = req.params.userId;
         const item: BasketItem = req.body;
 
         if (!item.productId || !item.quantity) {

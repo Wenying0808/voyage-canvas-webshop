@@ -37,7 +37,7 @@ connectToDatabase(MONGODB_URI)
 
     // CORS configuration
     app.use(cors({
-      origin: 'http://localhost:4200', // be replaced with the production app url
+      origin: ['http://localhost:4200', 'http://localhost:5200'], // be replaced with the production app url
       credentials: true
     }));
 
