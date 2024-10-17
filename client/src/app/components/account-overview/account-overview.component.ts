@@ -4,27 +4,27 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../interfaces/user.interface';
-import { catchError, of, Subscription, tap, timer } from 'rxjs';
+import { map, Observable, Subscription, tap } from 'rxjs';
 
 @Component({
   selector: 'app-account-overview',
   standalone: true,
   imports: [CommonModule, MatButtonModule, MatIconModule],
   template: `
-    <div class="account-overview" *ngIf="!(authService.currentUser | async)">
+    <div class="account-overview" *ngIf="!(isLoggedIn$ | async)">
       <button mat-fab extended (click)="login()">
         <mat-icon>login</mat-icon>
         Log In With Google
       </button>
     </div>
-    <div class="account-overview" *ngIf="authService.currentUser | async as user">
+    <div class="account-overview" *ngIf="isLoggedIn$ | async">
       <div class="account-overview-detail">
         <div class="account-overview-detail-header">Name:</div>
-        <div class="account-overview-detail-value">{{ user?.name }}</div>
+        <div class="account-overview-detail-value">{{ (user$ | async)?.name  }}</div>
       </div>
       <div class="account-overview-detail">
         <div class="account-overview-detail-header">Email:</div>
-        <div class="account-overview-detail-value">{{ user?.email }}</div>
+        <div class="account-overview-detail-value">{{(user$ | async)?.email  }}</div>
       </div>
       <button mat-fab extended (click)="logout()">
         <mat-icon>logout</mat-icon>
@@ -35,23 +35,32 @@ import { catchError, of, Subscription, tap, timer } from 'rxjs';
   styleUrl: `./account-overview.component.scss`
 })
 export class AccountOverviewComponent implements OnInit, OnDestroy{
-
-  user: User | null = null;
-  private userSubscription: Subscription | null = null;
+  
+  user$: Observable<User | null>;
+  isLoggedIn$: Observable<boolean>;
+  private userSubscription!: Subscription;
 
   constructor(
     public authService: AuthService,
-  ){}
+  ) {
+    this.user$ = this.authService.currentUser.pipe(
+      tap(user => console.log('User in AccountOverviewComponent (from currentUser):', user))
+    );
+    this.isLoggedIn$ = this.authService.isLoggedIn;
+  }
 
   ngOnInit() {
     console.log('AccountOverviewComponent initialized');
-    timer(100).subscribe(() => {
-      console.log('Calling loadUserData');
-      this.loadUserData();
-    });
+    this.user$ = this.authService.getCurrentUser().pipe(
+        tap({
+            next: user => console.log('User from getCurrentUser:', user),
+            error: error => console.error('Error getting current user:', error),
+            complete: () => console.log('getCurrentUser observable completed')
+        })
+    );
+    this.userSubscription = this.user$.subscribe();
   }
 
-  // properly unsubscribe from our observables when the component is destroyed. This helps prevent memory leaks.
   ngOnDestroy() {
     if (this.userSubscription) {
       this.userSubscription.unsubscribe();
@@ -67,30 +76,5 @@ export class AccountOverviewComponent implements OnInit, OnDestroy{
     this.authService.logout();
     console.log("log out triggered");
   }
-
-  loadUserData() {
-    this.userSubscription = this.authService.getCurrentUser().pipe(
-      tap(user => console.log('Current user:', user)),
-      catchError(error => {
-        if (error.status === 401) {
-          console.log('User not authenticated. This may be normal immediately after login.');
-          return of(null);
-        }
-        console.error('Unexpected error in getCurrentUser:', error);
-        return of(null);
-      })
-    ).subscribe({
-      next: (user) => {
-        this.user = user;
-        if (user) {
-          console.log('User data loaded successfully:', user);
-        } else {
-          console.log('No user data available from getCurrentUser');
-        }
-      },
-      error: (error) => {
-        console.error("Unexpected error in loadUserData subscription:", error);
-      }
-    });
-  }
 }
+

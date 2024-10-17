@@ -1,6 +1,6 @@
 import { Injectable, signal, WritableSignal, Signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError, of, BehaviorSubject, map } from 'rxjs';
+import { Observable, tap, catchError, of, BehaviorSubject, map, throwError } from 'rxjs';
 import { Basket, BasketItem } from '../interfaces/basket.interface';
 import { Product } from '../interfaces/product.interface';
 import { AuthService } from './auth.service';
@@ -22,7 +22,14 @@ export class BasketService {
   }
 
   getBasket(userId: string){
-    return this.httpClient.get<Basket>(`${this.apiUrl}/${userId}`);
+    return this.httpClient.get<Basket>(`${this.apiUrl}/${userId}`, { withCredentials: true })
+      .pipe(
+        tap(response => console.log('Basket response:', response)),
+        catchError(error => {
+          console.error('Error fetching basket:', error);
+          return throwError(() => new Error('Failed to fetch basket'));
+        })
+      );
   }
 
   addToBasket(userId: string, item: BasketItem): Observable<any> {
