@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProductFormComponent } from '../product-form/product-form.component';
-import { Product } from '../../product.interface';
-import { ProductService } from '../../product.service';
+import { Product } from '../../interfaces/product.interface';
+import { ProductService } from '../../services/product.service';
 import { MatCardModule } from '@angular/material/card';
 
 @Component({
