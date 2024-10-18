@@ -51,7 +51,7 @@ export class ProductCardComponent {
     this.authService.currentUser.pipe(
       tap( user => {
           if(!user) {
-            this.snackBar.open("Please log in to add items to your basket")
+            this.snackBar.open("Please log in to add items to your basket", 'Close', { duration: 3000 })
           }
         }
       ),

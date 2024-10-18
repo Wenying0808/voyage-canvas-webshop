@@ -43,7 +43,7 @@ import { AuthService } from '../../services/auth.service';
 export class BasketProductCardComponent implements OnInit {
 
   @Input() basketItem!: BasketItem;
-  @Output() quantityChange = new EventEmitter<number>();
+  @Output() quantityChange = new EventEmitter<{ productId: string, quantity: number }>();
   @Output() itemRemoved = new EventEmitter<string>();
 
   product$!: Observable<Product> ;
@@ -67,35 +67,24 @@ export class BasketProductCardComponent implements OnInit {
     }
   }
 
+
   onQuantityChange() {
-    if(this.userId && this.basketItem && this.basketItem.productId){
-      this.basketService.updateBasketItemQuantity(this.userId, this.basketItem.productId, this.basketItem.quantity).subscribe({
-        next: () => {
-          console.log('Quantity updated successfully');
-          this.quantityChange.emit(this.basketItem.quantity);
-        },
-        error: (error) => {
-          console.error('Error updating basket item quantity:', error);
-        }
+    if(this.basketItem && this.basketItem.productId){
+      this.quantityChange.emit({ 
+        productId: this.basketItem.productId, 
+        quantity: this.basketItem.quantity 
       });
-      
     } else {
-      console.error('Error updating basket item quantity: User is not authenticated');
+      console.error('Error: BasketItem or productId is undefined');
     }
   }
 
+
   onRemove() {
-    if(this.userId  && this.basketItem && this.basketItem.productId){
-      this.basketService.removeFromBasket(this.userId, this.basketItem.productId).subscribe({
-        next: () => {
-          this.itemRemoved.emit(this.basketItem.productId);
-        },
-        error: (error) => {
-          console.error('Error removing basket item:', error);
-        }
-      })
+    if(this.basketItem && this.basketItem.productId){
+      this.itemRemoved.emit(this.basketItem.productId);
     } else {
-      console.error('Error removing basket item: User is not authenticated');
+      console.error('Error: BasketItem or productId is undefined');
     }
   }
 }

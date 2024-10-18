@@ -23,6 +23,7 @@ import { User } from '../../interfaces/user.interface';
                   *ngFor="let item of basket.items" 
                   [basketItem]="item"
                   (itemRemoved)="onItemRemoved($event)"
+                  (quantityChange)="onQuantityChanged($event)"
                 />
               </div>
               <div class="basket-summary"></div>
@@ -64,6 +65,7 @@ export class BasketComponent implements OnInit {
 
  
   private refreshBasket() {
+    console.log('Refresh basket triggered');
     this.user$.pipe(
       switchMap(user => {
         if (user && user._id) {
@@ -99,4 +101,26 @@ export class BasketComponent implements OnInit {
       error: (error) => console.error('Error removing item:', error)
     });
   }
+
+  onQuantityChanged(quantityUpdate: { productId: string, quantity: number }) {
+    this.user$.pipe(
+      switchMap(user => {
+        if (user && user._id) {
+          return this.basketService.updateBasketItemQuantity(
+            user._id, 
+            quantityUpdate.productId, 
+            quantityUpdate.quantity
+          );
+        }
+        return of(null);
+      })
+    ).subscribe({
+      next: () => {
+        console.log('Quantity updated successfully');
+        this.refreshBasket();
+      },
+      error: (error: any) => console.error('Error updating quantity:', error)
+    });
+  }
 }
+
