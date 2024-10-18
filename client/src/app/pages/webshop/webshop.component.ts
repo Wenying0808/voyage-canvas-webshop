@@ -2,14 +2,17 @@ import { Component, OnInit, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
-import { ProductService } from '../../product.service';
-import { Product } from '../../product.interface';
+import { ProductService } from '../../services/product.service';
+import { BasketService } from '../../services/basket.service';
+import { Product } from '../../interfaces/product.interface';
+import { BasketProductCardComponent } from '../../components/basket-product-card/basket-product-card.component';
+import { BasketItem } from '../../interfaces/basket.interface';
 
 @Component({
   selector: 'app-webshop',
   standalone: true,
-  imports: [ProductCardComponent, CommonModule],
-  providers: [ProductService],
+  imports: [ProductCardComponent, CommonModule, BasketProductCardComponent],
+  providers: [ProductService, BasketService],
   template: `
     <div class="webshop" >
       <div class="webshop-product" *ngFor="let product of products$()">
@@ -23,9 +26,10 @@ import { Product } from '../../product.interface';
 export class WebshopComponent implements OnInit{
   products$ = {} as WritableSignal<Product[]>;
 
-  constructor(private productService: ProductService) {
-    
-  }
+
+  constructor(
+    private productService: ProductService, 
+  ) {}
 
   ngOnInit() {
     this.fetchProducts();

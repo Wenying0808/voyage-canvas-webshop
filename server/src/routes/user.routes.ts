@@ -1,7 +1,7 @@
 import * as express from "express";
 import { ObjectId } from "mongodb";
-import { collections } from "./database";
-import { User } from "./user.interface";
+import { collections } from "../database";
+import { User } from "../interfaces/user.interface";
 
 export const userRouter = express.Router();
 userRouter.use(express.json());
