@@ -110,7 +110,7 @@ basketRouter.put("/:userId/items/:productId", async (req, res) => {
         const { quantity } = req.body;
 
         if (typeof quantity !== 'number' || quantity < 1) {
-            return res.status(400).send("Invalid quantity");
+            return res.status(400).json({ message: "Invalid quantity" });
         }
 
         const query = { userId: userId, "items.productId": productId };
@@ -118,13 +118,16 @@ basketRouter.put("/:userId/items/:productId", async (req, res) => {
         const result = await collections.baskets?.updateOne(query, update);
 
         if (result?.modifiedCount) {
-            res.status(200).send(`Updated item quantity in basket for userId: ${userId}`);
-            res.status(200).send(`Updated quantity of item: ${update}`);
+            return res.status(200).json({
+                message: `Updated item quantity in basket for userId: ${userId}`,
+                update: update
+            });
         } else {
-            res.status(404).send(`Basket or item not found`);
+            return res.status(404).json({ message: `Basket or item not found` });
         }
     } catch (error) {
-        res.status(400).send(error instanceof Error ? error.message : "Unknown error: modifying the quantity for basket item");
+        console.error('Error updating basket item quantity:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 })
 

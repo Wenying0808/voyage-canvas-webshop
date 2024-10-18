@@ -37,7 +37,7 @@ export class BasketService {
   }
 
   updateBasketItemQuantity(userId: string, productId: string, quantity: number): Observable<string> {
-    return this.httpClient.put<string>(`${this.apiUrl}/${userId}/items/${productId}`, { quantity }, { withCredentials: true });
+    return this.httpClient.put<string>(`${this.apiUrl}/${userId}/items/${productId}`, { quantity: quantity }, { withCredentials: true });
   }
 
   removeFromBasket(userId: string, productId: string): Observable<string> {

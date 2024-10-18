@@ -44,7 +44,7 @@ export class BasketProductCardComponent implements OnInit {
 
   @Input() basketItem!: BasketItem;
   @Output() quantityChange = new EventEmitter<number>();
-  @Output() removeItem = new EventEmitter<void>();
+  @Output() itemRemoved = new EventEmitter<string>();
 
   product$!: Observable<Product> ;
   userId!: string | null;
@@ -53,29 +53,42 @@ export class BasketProductCardComponent implements OnInit {
     private authService: AuthService,
     private basketService: BasketService,
     private productService: ProductService,
-  ) {} 
+  ) {
+  } 
 
   ngOnInit() {
-    this.product$ = this.productService.getProduct(this.basketItem.productId);
     this.authService.currentUser.subscribe(user => {
       this.userId = user ? user._id : null;
     });
+    if (this.basketItem && this.basketItem.productId) {
+      this.product$ = this.productService.getProduct(this.basketItem.productId);
+    } else {
+      console.error('BasketItem or productId is undefined');
+    }
   }
 
   onQuantityChange() {
-    if(this.userId){
-      this.basketService.updateBasketItemQuantity(this.userId, this.basketItem.productId, this.basketItem.quantity);
-      this.quantityChange.emit(this.basketItem.quantity)
+    if(this.userId && this.basketItem && this.basketItem.productId){
+      this.basketService.updateBasketItemQuantity(this.userId, this.basketItem.productId, this.basketItem.quantity).subscribe({
+        next: () => {
+          console.log('Quantity updated successfully');
+          this.quantityChange.emit(this.basketItem.quantity);
+        },
+        error: (error) => {
+          console.error('Error updating basket item quantity:', error);
+        }
+      });
+      
     } else {
       console.error('Error updating basket item quantity: User is not authenticated');
     }
   }
 
   onRemove() {
-    if(this.userId){
+    if(this.userId  && this.basketItem && this.basketItem.productId){
       this.basketService.removeFromBasket(this.userId, this.basketItem.productId).subscribe({
         next: () => {
-          this.removeItem.emit()
+          this.itemRemoved.emit(this.basketItem.productId);
         },
         error: (error) => {
           console.error('Error removing basket item:', error);
