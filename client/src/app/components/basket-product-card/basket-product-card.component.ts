@@ -32,7 +32,7 @@ import { AuthService } from '../../services/auth.service';
           [(ngModel)]="basketItem.quantity" 
           (ngModelChange)="onQuantityChange()"
         >
-        <button (click)="onRemove(basketItem.productId)">
+        <button (click)="onRemove()">
           <mat-icon mat-mini-fab>delete</mat-icon>
         </button>
       </div>
@@ -41,7 +41,7 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: `./basket-product-card.component.scss`
 })
 export class BasketProductCardComponent implements OnInit {
-  @Input() productId!: string;
+
   @Input() basketItem!: BasketItem;
   @Output() quantityChange = new EventEmitter<number>();
   @Output() removeItem = new EventEmitter<void>();
@@ -56,20 +56,31 @@ export class BasketProductCardComponent implements OnInit {
   ) {} 
 
   ngOnInit() {
-    this.product$ = this.productService.getProduct(this.productId);
+    this.product$ = this.productService.getProduct(this.basketItem.productId);
     this.authService.currentUser.subscribe(user => {
       this.userId = user ? user._id : null;
     });
   }
 
   onQuantityChange() {
-    this.quantityChange.emit(this.basketItem.quantity)
+    if(this.userId){
+      this.basketService.updateBasketItemQuantity(this.userId, this.basketItem.productId, this.basketItem.quantity);
+      this.quantityChange.emit(this.basketItem.quantity)
+    } else {
+      console.error('Error updating basket item quantity: User is not authenticated');
+    }
   }
 
-  onRemove(productId: string) {
+  onRemove() {
     if(this.userId){
-      this.basketService.removeFromBasket(this.userId, productId);
-      this.removeItem.emit()
+      this.basketService.removeFromBasket(this.userId, this.basketItem.productId).subscribe({
+        next: () => {
+          this.removeItem.emit()
+        },
+        error: (error) => {
+          console.error('Error removing basket item:', error);
+        }
+      })
     } else {
       console.error('Error removing basket item: User is not authenticated');
     }

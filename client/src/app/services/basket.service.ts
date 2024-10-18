@@ -33,39 +33,22 @@ export class BasketService {
   }
 
   addToBasket(userId: string, item: BasketItem): Observable<any> {
-    return this.httpClient.post<string>(`${this.apiUrl}/${userId}/items`, item);
+    return this.httpClient.post<string>(`${this.apiUrl}/${userId}/items`, item, { withCredentials: true });
   }
 
   updateBasketItemQuantity(userId: string, productId: string, quantity: number): Observable<string> {
-    return this.httpClient.put<string>(`${this.apiUrl}/${userId}/items/${productId}`, { quantity });
+    return this.httpClient.put<string>(`${this.apiUrl}/${userId}/items/${productId}`, { quantity }, { withCredentials: true });
   }
 
   removeFromBasket(userId: string, productId: string): Observable<string> {
-    return this.httpClient.delete<string>(`${this.apiUrl}/${userId}/items/${productId}`);
-  }
-
-  /* Below is outdated 
-  addItemToBasket(product: Product) {
-    const newItem: BasketItem = {product: product, quantity: 1};
-    
-    this.basketItems$.update( items => {
-      return [...items, newItem]
-      }
+    return this.httpClient.delete<string>(`${this.apiUrl}/${userId}/items/${productId}`, { withCredentials: true })
+    .pipe(
+      tap(() => console.log(`Item ${productId} removed from basket for user ${userId}`)),
+      catchError(error => {
+        console.error('Error removing item from basket:', error);
+        return throwError(() => new Error('Failed to remove item from basket'));
+      })
     );
-    
-    console.log ("add to basket service is triggered", product);
-    console.log("updated basketItems", this.basketItems$());
   }
 
-  getBasketItems(): Signal<BasketItem[]>{
-    return this.basketItems$;
-  }
-
-  removeItemFromBasket(product: Product){
-    const productId = product._id;
-    this.basketItems$.update( items => items.filter(item => item.product._id !== productId));
-    console.log("Product removed from basket", product);
-    console.log("Updated basketItems after removal", this.basketItems$());
-  }
-    */
 }

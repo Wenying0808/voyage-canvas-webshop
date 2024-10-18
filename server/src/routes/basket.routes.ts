@@ -133,7 +133,7 @@ basketRouter.delete("/:userId/items/:productId", async (req, res) => {
     try {
         const { userId, productId } = req.params;
         const query = { userId: userId };
-        const update = { $pull: { items: { productId } } };
+        const update = { $pull: { items: { productId: productId } } };
         const result = await collections.baskets?.updateOne(query, update);
 
         if (result?.modifiedCount) {

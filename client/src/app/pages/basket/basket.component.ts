@@ -19,7 +19,11 @@ import { User } from '../../interfaces/user.interface';
           <ng-container *ngIf="(basket$ | async) as basket">
             <div *ngIf="basket && basket.items && basket.items.length > 0; else emptyBasket">
               <div class="basket-items-list">
-                <app-basket-product-card *ngFor="let item of basket.items" [basketItem]="item"/>
+                <app-basket-product-card 
+                  *ngFor="let item of basket.items" 
+                  [basketItem]="item"
+                  (removeItem)="onRemoveItem(user._id, item.productId)"
+                />
               </div>
               <div class="basket-summary"></div>
             </div>
@@ -87,5 +91,14 @@ export class BasketComponent implements OnInit {
         // Handle the case where there's no basket
       }
     })
+  }
+
+  onRemoveItem(userId: string, productId: string) {
+    this.basketService.removeFromBasket(userId, productId).pipe(
+      switchMap(() => this.basketService.getBasket(userId))
+    ).subscribe({
+      next: (updatedBasket) => { this.basket$ = of(updatedBasket) },
+      error: (error) => { console.error('Error removing item from basket:', error) }
+    });
   }
 }
