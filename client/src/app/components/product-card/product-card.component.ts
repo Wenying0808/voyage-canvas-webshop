@@ -1,7 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Product } from '../../product.interface';
+import { Product } from '../../interfaces/product.interface';
 
 
 @Component({
@@ -19,7 +19,7 @@ import { Product } from '../../product.interface';
           <div class="product-card-subheader-price">€{{ product.price }}</div>
           <div class="product-card-subheader-bottom">
               <div class="product-card-subheader-bottom-stock">{{ product.stock }}</div>
-              <button class="product-card-subheader-bottom-button">
+              <button class="product-card-subheader-bottom-button" (click)="onAddToBasket()" [disabled]="isAddingToBasket">
                   <mat-icon mat-mini-fab>add_shopping_cart</mat-icon>
               </button>
           </div>
@@ -30,4 +30,14 @@ import { Product } from '../../product.interface';
 })
 export class ProductCardComponent {
   @Input() product!: Product;
+  @Input() isAddingToBasket = false;
+  @Output() addToBasket = new EventEmitter<Product>();
+  
+
+  constructor(
+  ) {}
+
+  onAddToBasket() {
+    this.addToBasket.emit(this.product);
+  }
 }

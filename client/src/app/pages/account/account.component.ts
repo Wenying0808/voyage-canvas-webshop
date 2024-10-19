@@ -4,7 +4,7 @@ import { SidebarComponent } from '../../components/sidebar/sidebar.component';
 import { AccountOverviewComponent } from '../../components/account-overview/account-overview.component';
 import { OrdersOverviewComponent } from '../../components/orders-overview/orders-overview.component';
 import { Subscription } from 'rxjs';
-import { AuthService } from '../../auth.service';
+import { AuthService } from '../../services/auth.service';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 

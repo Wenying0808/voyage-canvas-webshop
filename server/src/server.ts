@@ -1,12 +1,15 @@
 import * as dotenv from "dotenv";
 import express from "express";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import { connectToDatabase } from "./database";
-import { productRouter } from "./product.routes";
-import { userRouter } from "./user.routes";
+import { productRouter } from "./routes/product.routes";
+import { userRouter } from "./routes/user.routes";
+import { basketRouter } from "./routes/basket.routes";
 import passport from './auth';
 import session from 'express-session';
 import MongoStore from "connect-mongo";
+
 
 
 // Load environment variables from the .env file, where the ATLAS_URI is configured
@@ -34,13 +37,16 @@ connectToDatabase(MONGODB_URI)
 
     // CORS configuration
     app.use(cors({
-      origin: 'http://localhost:4200', // be replaced with the production app url
+      /*origin: ['http://localhost:4200', 'http://localhost:5200'], // be replaced with the production app url*/
+      origin: 'http://localhost:4200',
       credentials: true
     }));
 
     // Body parser middleware
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
+    
+    app.use(cookieParser());
 
     app.use(session({
       secret: SESSION_SECRET,
@@ -61,6 +67,7 @@ connectToDatabase(MONGODB_URI)
 
     app.use("/products", productRouter);
     app.use("/users", userRouter);
+    app.use("/baskets", basketRouter);
 
     // Auth routes
     app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));

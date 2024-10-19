@@ -1,10 +1,12 @@
 import * as mongodb from "mongodb";
-import { Product } from "./product.interface";
-import { User } from "./user.interface";
+import { Product } from "./interfaces/product.interface";
+import { User } from "./interfaces/user.interface";
+import { Basket } from "./interfaces/basket.interface";
 
 export const collections: {
     products?: mongodb.Collection<Product>;
     users?: mongodb.Collection<User>;
+    baskets?: mongodb.Collection<Basket>
 } = {};
 
 export async function connectToDatabase(uri: string) {
@@ -14,11 +16,16 @@ export async function connectToDatabase(uri: string) {
     const db = client.db("voyage-canvas-webshop");
     await applySchemaValidation(db);
 
+    console.log("Connected to database!");
+
     const productsCollection = db.collection<Product>("products");
     collections.products = productsCollection;
 
     const usersCollection = db.collection<User>("users");
     collections.users = usersCollection;
+
+    const basketsCollection = db.collection<Basket>("baskets");
+    collections.baskets = basketsCollection;
 }
 
 async function applySchemaValidation(db: mongodb.Db) {
@@ -93,6 +100,39 @@ async function applySchemaValidation(db: mongodb.Db) {
             }
         }
     };
+    const basketSchema = {
+        $jsonSchema:{
+            bsonType: "object",
+            required: ["items", "userId"],
+            additionalProperties: false,
+            properties: {
+                _id: {},
+                userId: {
+                    bsonType: ["string", "null"],
+                    description: "'userId' is a string or null for non-logged in users",
+                },
+                items: {
+                    bsonType: "array",
+                    description: "'items' is required and is a array of basketItem",
+                    items: {
+                        bsonType: "object",
+                        required: ["productId", "quantity"],
+                        properties: {
+                            productId: {
+                                bsonType: "string",
+                                description: "'productId' is a string",
+                            },
+                            quantity: {
+                                bsonType: "int",
+                                description: "'quantity' is required and is an integer"
+                            },
+                        }
+                    }
+                    }
+                },
+            }
+    };
+    
 
     // Try applying the modification to the collection, if the collection doesn't exist, create it
    await db.command({
@@ -111,5 +151,14 @@ async function applySchemaValidation(db: mongodb.Db) {
             if (error.codeName === "NamespaceNotFound") {
                 await db.createCollection("users", {validator: userSchema});
             }
+    });
+
+    await db.command({
+        collMod: "baskets",
+        validator: basketSchema
+    }).catch(async (error: mongodb.MongoServerError) => {
+        if (error.codeName === "NamespaceNotFound") {
+            await db.createCollection("baskets", {validator: basketSchema});
+        }
     });
 }

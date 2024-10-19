@@ -1,5 +1,7 @@
+import * as mongodb from 'mongodb';
+
 export interface Product {
-    _id?: string;
+    _id: mongodb.ObjectId;
     name: string;
     description: string;
     country: {
