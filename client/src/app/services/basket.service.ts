@@ -11,7 +11,8 @@ import { AuthService } from './auth.service';
 export class BasketService {
   private apiUrl = 'http://localhost:5200/baskets';
  
-  basketItems$: WritableSignal<BasketItem[]> = signal<BasketItem[]>([]);
+  private basketSubject = new BehaviorSubject<Basket | null>(null);
+  basket$ = this.basketSubject.asObservable();
   
   constructor(
     private httpClient: HttpClient,
@@ -43,12 +44,24 @@ export class BasketService {
   removeFromBasket(userId: string, productId: string): Observable<string> {
     return this.httpClient.delete<string>(`${this.apiUrl}/${userId}/items/${productId}`, { withCredentials: true })
     .pipe(
-      tap(() => console.log(`Item ${productId} removed from basket for user ${userId}`)),
+      tap(() => {
+        console.log(`Item ${productId} removed from basket for user ${userId}`);
+        // Update local state
+        const currentBasket = this.basketSubject.getValue();
+        if (currentBasket) {
+          const updatedBasket = { ...currentBasket, items: currentBasket.items.filter(item => item.productId !== productId) };
+          this.basketSubject.next(updatedBasket);
+        }
+      }),
       catchError(error => {
         console.error('Error removing item from basket:', error);
         return throwError(() => new Error('Failed to remove item from basket'));
       })
     );
+  }
+
+  setBasket(basket: Basket | null) {
+    this.basketSubject.next(basket);
   }
 
 }

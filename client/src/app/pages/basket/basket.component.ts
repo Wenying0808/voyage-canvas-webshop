@@ -46,8 +46,8 @@ export class BasketComponent implements OnInit {
   
   isLoggedIn$: Observable<boolean>;
   user$: Observable<User | null>;
-  private basketSubject = new BehaviorSubject<Basket | null>(null);
-  basket$ = this.basketSubject.asObservable();
+  basket$: Observable<Basket | null>;
+  
 
   constructor(
     private authService: AuthService,
@@ -56,13 +56,12 @@ export class BasketComponent implements OnInit {
     console.log('BasketComponent constructor called');
     this.isLoggedIn$ = this.authService.isLoggedIn;
     this.user$ = this.authService.currentUser;
+    this.basket$ = this.basketService.basket$;
     this.refreshBasket();
-
   }
 
   ngOnInit() {
   }
-
  
   private refreshBasket() {
     console.log('Refresh basket triggered');
@@ -80,7 +79,7 @@ export class BasketComponent implements OnInit {
         }
       })
     ).subscribe(basket => {
-      this.basketSubject.next(basket);
+      this.basketService.setBasket(basket);
     });
   }
 
@@ -88,17 +87,21 @@ export class BasketComponent implements OnInit {
     this.user$.pipe(
       switchMap(user => {
         if (user && user._id) {
-          return this.basketService.removeFromBasket(user._id, productId);
+          return this.basketService.removeFromBasket(user._id, productId).pipe(
+            catchError(error => {
+              console.error('Error removing item:', error);
+              // Return an observable that emits null to continue the stream
+              return of(null);
+            })
+          )
         }
         return of(null);
       })
     ).subscribe({
       next: () => {
         console.log('Item removed successfully');
-        // The basket$ observable will automatically update
-        this.refreshBasket(); // Refresh the basket after item removal
+        this.refreshBasket();
       },
-      error: (error) => console.error('Error removing item:', error)
     });
   }
 

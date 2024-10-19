@@ -51,7 +51,6 @@ export class BasketProductCardComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private basketService: BasketService,
     private productService: ProductService,
   ) {
   } 
@@ -67,7 +66,6 @@ export class BasketProductCardComponent implements OnInit {
     }
   }
 
-
   onQuantityChange() {
     if(this.basketItem && this.basketItem.productId){
       this.quantityChange.emit({ 
@@ -78,7 +76,6 @@ export class BasketProductCardComponent implements OnInit {
       console.error('Error: BasketItem or productId is undefined');
     }
   }
-
 
   onRemove() {
     if(this.basketItem && this.basketItem.productId){
